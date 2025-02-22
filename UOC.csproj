@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <RootNamespace>uoc_for_c_sharp</RootNamespace>
+    <RootNamespace>UOC</RootNamespace>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
