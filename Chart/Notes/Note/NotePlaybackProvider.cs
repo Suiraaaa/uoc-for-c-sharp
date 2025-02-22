@@ -22,15 +22,13 @@ namespace UOC.Chart.Notes
 
         internal NotePlaybackProvider(NoteProfile noteProfile, EventsProvider eventsProvider, AnalysisSetting analysisSetting, TPB tpb, MeasureIndex maxMeasureIndex)
         {
-            if (noteProfile == null) throw new ArgumentNullException(nameof(noteProfile));
             if (eventsProvider == null) throw new ArgumentNullException(nameof(eventsProvider));
-            if (analysisSetting == null) throw new ArgumentNullException(nameof(analysisSetting));
-            if (tpb == null) throw new ArgumentNullException(nameof(tpb));
             if (maxMeasureIndex == null) throw new ArgumentNullException(nameof(maxMeasureIndex));
 
-            this.noteProfile = noteProfile;
-            this.analysisSetting = analysisSetting;
-            this.tpb = tpb;
+            this.noteProfile = noteProfile ?? throw new ArgumentNullException(nameof(noteProfile));
+            this.analysisSetting = analysisSetting ?? throw new ArgumentNullException(nameof(analysisSetting));
+            this.tpb = tpb ?? throw new ArgumentNullException(nameof(tpb));
+
             bpmProvider = eventsProvider.BPMProvider;
             SpeedMultiplierProvider = eventsProvider.SpeedMultiplierProvider;
             measureLengthProvider = eventsProvider.MeasureLengthProvider;

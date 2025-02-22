@@ -56,7 +56,7 @@ namespace UOC.Chart
             return Equals(obj as Layer);
         }
 
-        public bool Equals(Layer other)
+        public bool Equals(Layer? other)
         {
             return other is not null &&
                    value == other.value;
@@ -67,12 +67,12 @@ namespace UOC.Chart
             return HashCode.Combine(value);
         }
 
-        public static bool operator ==(Layer left, Layer right)
+        public static bool operator ==(Layer? left, Layer? right)
         {
-            return EqualityComparer<Layer>.Default.Equals(left, right);
+            return EqualityComparer<Layer?>.Default.Equals(left, right);
         }
 
-        public static bool operator !=(Layer left, Layer right)
+        public static bool operator !=(Layer? left, Layer? right)
         {
             return !(left == right);
         }

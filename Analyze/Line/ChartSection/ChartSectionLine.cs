@@ -19,17 +19,13 @@ namespace UOC.Analyze
 
         public ChartSectionLine(IReadOnlyList<Position> positions, IReadOnlyList<string> propertyValues, Layer layer, Channel channel, NoteDefIndex noteDefIndex)
         {
-            if (positions == null || positions.Count == 0) throw new ArgumentException(nameof(positions));
-            if (propertyValues == null) throw new ArgumentException(nameof(propertyValues));
-            if (layer == null) throw new ArgumentNullException(nameof(layer));
-            if (channel == null) throw new ArgumentNullException(nameof(channel));
-            if (noteDefIndex == null) throw new ArgumentNullException(nameof(noteDefIndex));
+            this.positions = positions ?? throw new ArgumentNullException(nameof(positions));
+            this.layer = layer ?? throw new ArgumentNullException(nameof(layer));
+            this.channel = channel ?? throw new ArgumentNullException(nameof(channel));
+            this.propertyValues = propertyValues ?? throw new ArgumentException(nameof(propertyValues));
+            this.noteDefIndex = noteDefIndex ?? throw new ArgumentNullException(nameof(noteDefIndex));
 
-            this.positions = positions;
-            this.layer = layer;
-            this.channel = channel;
-            this.propertyValues = propertyValues;
-            this.noteDefIndex = noteDefIndex;
+            if (positions.Count == 0) throw new ArgumentException(nameof(positions));
         }
 
         public static ChartSectionLine ParseUOCLine(UOCLine line, Layer layer)

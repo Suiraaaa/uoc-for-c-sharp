@@ -12,7 +12,7 @@ namespace UOC.Chart
 
         public PropertyValue()
         {
-            value = null;
+            value = string.Empty;
             isEmpty = true;
         }
 

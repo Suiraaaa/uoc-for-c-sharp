@@ -23,7 +23,7 @@ namespace UOC.Chart.Notes
             return Equals(obj as NoteId);
         }
 
-        public bool Equals(NoteId other)
+        public bool Equals(NoteId? other)
         {
             return other is not null &&
                    value == other.value;
@@ -34,12 +34,12 @@ namespace UOC.Chart.Notes
             return HashCode.Combine(value);
         }
 
-        public static bool operator ==(NoteId left, NoteId right)
+        public static bool operator ==(NoteId? left, NoteId? right)
         {
-            return EqualityComparer<NoteId>.Default.Equals(left, right);
+            return EqualityComparer<NoteId?>.Default.Equals(left, right);
         }
 
-        public static bool operator !=(NoteId left, NoteId right)
+        public static bool operator !=(NoteId? left, NoteId? right)
         {
             return !(left == right);
         }

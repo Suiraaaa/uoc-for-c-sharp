@@ -23,7 +23,7 @@ namespace UOC.Chart
             return Equals(obj as MeasureIndex);
         }
 
-        public bool Equals(MeasureIndex other)
+        public bool Equals(MeasureIndex? other)
         {
             return other is not null &&
                    value == other.value;
@@ -34,12 +34,12 @@ namespace UOC.Chart
             return HashCode.Combine(value);
         }
 
-        public static bool operator ==(MeasureIndex left, MeasureIndex right)
+        public static bool operator ==(MeasureIndex? left, MeasureIndex? right)
         {
-            return EqualityComparer<MeasureIndex>.Default.Equals(left, right);
+            return EqualityComparer<MeasureIndex?>.Default.Equals(left, right);
         }
 
-        public static bool operator !=(MeasureIndex left, MeasureIndex right)
+        public static bool operator !=(MeasureIndex? left, MeasureIndex? right)
         {
             return !(left == right);
         }

@@ -18,7 +18,7 @@ namespace UOC.Analyze
             if (lines == null) throw new ArgumentNullException(nameof(lines));
 
             var chartSectionLineList = new List<ChartSectionLine>();
-            Layer currentLayer = null;
+            var currentLayer = (Layer?)null;
             foreach (var line in lines)
             {
                 if (Layer.CanFormUOCLine(line))

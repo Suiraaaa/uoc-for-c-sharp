@@ -24,7 +24,7 @@ namespace UOC.Chart
             return Equals(obj as PropertyKey);
         }
 
-        public bool Equals(PropertyKey other)
+        public bool Equals(PropertyKey? other)
         {
             return other is not null &&
                    value == other.value;
@@ -35,12 +35,12 @@ namespace UOC.Chart
             return HashCode.Combine(value);
         }
 
-        public static bool operator ==(PropertyKey left, PropertyKey right)
+        public static bool operator ==(PropertyKey? left, PropertyKey? right)
         {
-            return EqualityComparer<PropertyKey>.Default.Equals(left, right);
+            return EqualityComparer<PropertyKey?>.Default.Equals(left, right);
         }
 
-        public static bool operator !=(PropertyKey left, PropertyKey right)
+        public static bool operator !=(PropertyKey? left, PropertyKey? right)
         {
             return !(left == right);
         }

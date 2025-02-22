@@ -24,7 +24,7 @@ namespace UOC.Chart
             return Equals(obj as SpeedMultiplier);
         }
 
-        public bool Equals(SpeedMultiplier other)
+        public bool Equals(SpeedMultiplier? other)
         {
             return other is not null &&
                    multiplier == other.multiplier;
@@ -35,12 +35,12 @@ namespace UOC.Chart
             return HashCode.Combine(multiplier);
         }
 
-        public static bool operator ==(SpeedMultiplier left, SpeedMultiplier right)
+        public static bool operator ==(SpeedMultiplier? left, SpeedMultiplier? right)
         {
-            return EqualityComparer<SpeedMultiplier>.Default.Equals(left, right);
+            return EqualityComparer<SpeedMultiplier?>.Default.Equals(left, right);
         }
 
-        public static bool operator !=(SpeedMultiplier left, SpeedMultiplier right)
+        public static bool operator !=(SpeedMultiplier? left, SpeedMultiplier? right)
         {
             return !(left == right);
         }

@@ -58,7 +58,7 @@ namespace UOC.Chart.Notes
             return Equals(obj as Channel);
         }
 
-        public bool Equals(Channel other)
+        public bool Equals(Channel? other)
         {
             return other is not null &&
                    value == other.value &&
@@ -70,12 +70,12 @@ namespace UOC.Chart.Notes
             return HashCode.Combine(value, isEmpty);
         }
 
-        public static bool operator ==(Channel left, Channel right)
+        public static bool operator ==(Channel? left, Channel? right)
         {
-            return EqualityComparer<Channel>.Default.Equals(left, right);
+            return EqualityComparer<Channel?>.Default.Equals(left, right);
         }
 
-        public static bool operator !=(Channel left, Channel right)
+        public static bool operator !=(Channel? left, Channel? right)
         {
             return !(left == right);
         }

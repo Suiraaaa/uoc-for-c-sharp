@@ -23,12 +23,11 @@ namespace UOC.Chart
         /// <param name="activeIndex">ノートの有効セクション位置（0始まり）</param>
         public Position(MeasureIndex measureIndex, int sectionCount, int activeIndex)
         {
-            if (measureIndex == null) throw new ArgumentNullException(nameof(measureIndex));
             if (sectionCount < 1) throw new ArgumentOutOfRangeException(nameof(sectionCount));
             if (activeIndex < 0) throw new ArgumentOutOfRangeException(nameof(activeIndex));
             if (activeIndex >= sectionCount) throw new ArgumentOutOfRangeException(nameof(activeIndex));
 
-            this.measureIndex = measureIndex;
+            this.measureIndex = measureIndex ?? throw new ArgumentNullException(nameof(measureIndex));
 
             // 位置を約分して設定
             int gcd = GCD(activeIndex, sectionCount);
@@ -153,12 +152,23 @@ namespace UOC.Chart
 
         }
 
+        private static int GCD(int a, int b)
+        {
+            while (b != 0)
+            {
+                int temp = b;
+                b = a % b;
+                a = temp;
+            }
+            return a;
+        }
+
         public override bool Equals(object obj)
         {
             return Equals(obj as Position);
         }
 
-        public bool Equals(Position other)
+        public bool Equals(Position? other)
         {
             return other is not null &&
                    EqualityComparer<MeasureIndex>.Default.Equals(measureIndex, other.measureIndex) &&
@@ -167,7 +177,7 @@ namespace UOC.Chart
                    measureIndex == other.measureIndex;
         }
 
-        public int CompareTo(Position other)
+        public int CompareTo(Position? other)
         {
             if (other == null) throw new ArgumentNullException(nameof(other));
             var scale = measureIndex.Value + Position01;
@@ -180,12 +190,12 @@ namespace UOC.Chart
             return HashCode.Combine(measureIndex, sectionCount, activeIndex);
         }
 
-        public static bool operator ==(Position left, Position right)
+        public static bool operator ==(Position? left, Position? right)
         {
-            return EqualityComparer<Position>.Default.Equals(left, right);
+            return EqualityComparer<Position?>.Default.Equals(left, right);
         }
 
-        public static bool operator !=(Position left, Position right)
+        public static bool operator !=(Position? left, Position? right)
         {
             return !(left == right);
         }
@@ -208,17 +218,6 @@ namespace UOC.Chart
         public static bool operator <=(Position left, Position right)
         {
             return left.CompareTo(right) <= 0;
-        }
-
-        private static int GCD(int a, int b)
-        {
-            while (b != 0)
-            {
-                int temp = b;
-                b = a % b;
-                a = temp;
-            }
-            return a;
         }
     }
 }
