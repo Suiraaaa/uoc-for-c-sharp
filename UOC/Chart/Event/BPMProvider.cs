@@ -17,7 +17,7 @@ namespace UOC.Chart
             if (bpmChangeEvents.Count == 0) throw new ArgumentException("BPM変動イベントが含まれていません。");
 
             // 小節
-            // 小節番号・チックで昇順ソート
+            // 小節番号・ティックで昇順ソート
             var sortedBPMChangeEvents = bpmChangeEvents.OrderBy(x => x.MeasureIndex.Value).ThenBy(x => x.Tick.Value).ToList();
             if (sortedBPMChangeEvents[0].MeasureIndex.Value != 0 || sortedBPMChangeEvents[0].Tick.Value != 0) throw new ArgumentException("譜面始点のBPMが含まれていません。");
 

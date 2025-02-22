@@ -15,7 +15,7 @@ namespace UOC.Chart
         {
             if (speedChangeEvents == null) throw new ArgumentNullException(nameof(speedChangeEvents));
 
-            // 小節番号・チックで昇順ソート
+            // 小節番号・ティックで昇順ソート
             var sortedSpeedChangeEvents = speedChangeEvents.OrderBy(x => x.MeasureIndex.Value).ThenBy(x => x.Tick.Value).ToList();
             this.speedChangeEvents = sortedSpeedChangeEvents;
         }

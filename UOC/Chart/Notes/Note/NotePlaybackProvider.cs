@@ -165,7 +165,7 @@ namespace UOC.Chart.Notes
         /// 指定された位置のタイミングを計算します。
         /// </summary>
         /// <param name="measureIndex">対象小節番号</param>
-        /// <param name="tick">チック</param>
+        /// <param name="tick">ティック</param>
         /// <returns>指定された位置のタイミング</returns>
         private long CalculateTiming(int measureIndex, int tick)
         {
@@ -201,11 +201,11 @@ namespace UOC.Chart.Notes
         }
 
         /// <summary>
-        /// 指定された小節内の、指定されたチックまでの持続時間を求めます。
+        /// 指定された小節内の、指定されたティックまでの持続時間を求めます。
         /// </summary>
         /// <param name="measureIndex">対象小節</param>
-        /// <param name="maxTick">最大チック</param>
-        /// <returns>指定された小節内での指定されたチックまでの持続時間</returns>
+        /// <param name="maxTick">最大ティック</param>
+        /// <returns>指定された小節内での指定されたティックまでの持続時間</returns>
         private float CalculateMeasureDurationUpToTick(int measureIndex, int maxTick)
         {
             var measureMaxTick = CalculateMeasureMaxTick(measureIndex);
@@ -243,10 +243,10 @@ namespace UOC.Chart.Notes
         }
 
         /// <summary>
-        /// 指定された小節の最大チックを求めます。
+        /// 指定された小節の最大ティックを求めます。
         /// </summary>
         /// <param name="measureIndex">対象小節</param>
-        /// <returns>指定された小節の最大チック</returns>
+        /// <returns>指定された小節の最大ティック</returns>
         private int CalculateMeasureMaxTick(int measureIndex)
         {
             var measureLength = measureLengthProvider.GetMeasureLengthAt(measureIndex);
@@ -264,10 +264,10 @@ namespace UOC.Chart.Notes
         }
 
         /// <summary>
-        /// 指定された位置のチックを求めます。
+        /// 指定された位置のティックを求めます。
         /// </summary>
         /// <param bpm="position">対象位置</param>
-        /// <returns>指定された位置のチック</returns>
+        /// <returns>指定された位置のティック</returns>
         private int CalculateTickFromPosition(Position position)
         {
             var measureLength = measureLengthProvider.GetMeasureLengthAt(position.MeasureIndex.Value);

@@ -3,7 +3,7 @@ using System;
 namespace UOC.Chart.Notes
 {
     /// <summary>
-    /// チック
+    /// ティック
     /// </summary>
     public class Tick
     {
