@@ -68,10 +68,10 @@ namespace UOC.Chart.Notes
         public NoteGuid Guid => guid;
 
         /// <summary>
-        /// ノート位置を更新します。
+        /// 譜面位置を更新します。
         /// </summary>
-        /// <param name="position">ノート位置</param>
-        /// <returns>ノート位置が更新されたNoteProfile</returns>
+        /// <param name="position">譜面位置</param>
+        /// <returns>譜面位置が更新されたNoteProfile</returns>
         public NoteProfile UpdatePosition(Position position)
         {
             return new NoteProfile(noteDef, position, propertyGroup.GetPropertyValueList(), layer, channel, guid);

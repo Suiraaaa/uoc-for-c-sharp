@@ -108,10 +108,10 @@ namespace UOC.Chart
         }
 
         /// <summary>
-        /// ノート位置までの拍数を求めます。
+        /// 譜面位置までの拍数を求めます。
         /// </summary>
         /// <param name="measureLengthProvider">小節長プロバイダ</param>
-        /// <returns>ノート位置までの拍数</returns>
+        /// <returns>譜面位置までの拍数</returns>
         public float GetTotalBeatsCount(MeasureLengthProvider measureLengthProvider)
         {
             var totalBeatsCount = 0f;
@@ -124,9 +124,9 @@ namespace UOC.Chart
         }
 
         /// <summary>
-        /// ノート位置までの拍数からPositionを作成します。
+        /// 譜面位置までの拍数からPositionを作成します。
         /// </summary>
-        /// <param name="beatsCount">ノート位置までの拍数</param>
+        /// <param name="beatsCount">譜面位置までの拍数</param>
         /// <param name="measureLengthProvider">小節長プロバイダ</param>
         /// <returns>Positionインスタンス</returns>
         private static Position CreateFromBeatsCount(float beatsCount, MeasureLengthProvider measureLengthProvider)

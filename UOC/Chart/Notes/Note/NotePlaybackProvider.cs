@@ -152,7 +152,7 @@ namespace UOC.Chart.Notes
         /// <summary>
         /// 指定された位置からタイミングを計算します。
         /// </summary>
-        /// <param name="position">ノート位置</param>
+        /// <param name="position">譜面位置</param>
         /// <returns>指定された位置のタイミング</returns>
         private long CalculateTimingFromPosition(Position position)
         {
