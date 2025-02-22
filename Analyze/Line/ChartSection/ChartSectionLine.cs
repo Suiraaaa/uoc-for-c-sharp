@@ -44,7 +44,6 @@ namespace UOC.Analyze
                 var match = Regex.Match(line.LineText, @"^\s*(\d{3})(\d)([A-Z0-9]{2})?\s*:\s*(\d+)(?:\s*,\s*(.*))*?$");
                 if (!match.Success)
                 {
-                    UnityEngine.Debug.Log(line.LineText);
                     throw new Exception("正規表現によるパースに失敗しました。");
                 }
                 var measureIndex = new MeasureIndex(int.Parse(match.Groups[1].Value));

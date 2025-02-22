@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 using UOC.Analyze;
 
 namespace UOC.Chart.Notes
@@ -253,7 +252,7 @@ namespace UOC.Chart.Notes
         private int CalculateMeasureMaxTick(int measureIndex)
         {
             var measureLength = measureLengthProvider.GetMeasureLengthAt(measureIndex);
-            return Mathf.FloorToInt(measureLength.BeatsCount * tpb.Value); // 小数点以下切り捨て
+            return (int)Math.Floor(measureLength.BeatsCount * tpb.Value); // 小数点以下切り捨て
         }
 
         /// <summary>

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 using UOC.Chart.Notes;
 
 namespace UOC.Chart
@@ -87,7 +86,7 @@ namespace UOC.Chart
         public int CalculateTickInt(MeasureLength measureLength, TPB tpb)
         {
             var tick = tpb.Value * measureLength.BeatsCount * Position01;
-            return Mathf.FloorToInt(Mathf.FloorToInt(tick)); // 小数点以下切り捨て
+            return (int)Math.Floor(tick); // 小数点以下切り捨て
         }
 
         public Position AddDistance(Distance distance, MeasureLengthProvider measureLengthProvider)
