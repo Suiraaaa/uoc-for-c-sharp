@@ -129,9 +129,9 @@ namespace Uoc.Chart.Notes
         internal MeasureLengthChangeEvent ToMeasureLengthChangeEvent()
         {
             if (!IsMeasureLengthChangeNote()) throw new InvalidOperationException("ノートがMeasureLengthChangeNoteではないため、MeasureLengthChangeEventに変換できません。");
-            int denominator = propertyGroup.GetPropertyByKey("denominator").Value.AsInt();
             int numerator = propertyGroup.GetPropertyByKey("numerator").Value.AsInt();
-            var measureLength = new MeasureLength(denominator, numerator);
+            int denominator = propertyGroup.GetPropertyByKey("denominator").Value.AsInt();
+            var measureLength = new MeasureLength(numerator, denominator);
             return new MeasureLengthChangeEvent(position, measureLength);
         }
     }

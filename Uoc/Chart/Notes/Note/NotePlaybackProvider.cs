@@ -218,7 +218,7 @@ namespace Uoc.Chart.Notes
             // BPMの変動がない場合はそのまま
             if (bpmChanges.Count == 0)
             {
-                return CalculateBeatMilliSeconds(measureStartBpm.Value) * measureLength.BeatsCount;
+                return CalculateQuarterNoteMilliseconds(measureStartBpm.Value) * measureLength.GetQuarterNoteCount();
             }
 
             float duration = 0;
@@ -235,7 +235,7 @@ namespace Uoc.Chart.Notes
 
                 int tickDuration = endTick - startTick;
                 float applyingRatio = (float)tickDuration / measureMaxTick;
-                duration += CalculateBeatMilliSeconds(measureStartBpm.Value) * measureLength.BeatsCount * applyingRatio;
+                duration += CalculateQuarterNoteMilliseconds(measureStartBpm.Value) * measureLength.GetQuarterNoteCount() * applyingRatio;
 
                 if (completed) break;
             }
@@ -250,7 +250,7 @@ namespace Uoc.Chart.Notes
         private int CalculateMeasureMaxTick(int measureIndex)
         {
             var measureLength = measureLengthProvider.GetMeasureLengthAt(measureIndex);
-            return (int)Math.Floor(measureLength.BeatsCount * tpb.Value); // 小数点以下切り捨て
+            return (int)Math.Floor((float)(measureLength.GetBeatCount() * tpb.Value)); // 小数点以下切り捨て
         }
 
         /// <summary>
@@ -258,7 +258,7 @@ namespace Uoc.Chart.Notes
         /// </summary>
         /// <param bpm="bpm">BPM</param>
         /// <returns>一拍の長さ（ミリ秒）</returns>
-        private float CalculateBeatMilliSeconds(float bpm)
+        private float CalculateQuarterNoteMilliseconds(float bpm)
         {
             return 60f / bpm * 1000f;
         }

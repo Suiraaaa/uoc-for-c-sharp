@@ -71,28 +71,49 @@ namespace Uoc.Chart
         /// 位置が小節の始点である場合にtrueを返します。
         /// </summary>
         /// <returns>位置が小節の始点であるかどうか</returns>
-        public bool IsStartPoitionInMeasure()
+        public bool IsMeasureStart()
         {
             return activeIndex == 0;
         }
 
+        /// <summary>
+        /// 位置が譜面の始点である場合にtrueを返します。
+        /// </summary>
+        /// <returns>位置が譜面の始点であるかどうか</returns>
+        public bool IsChartStart()
+        {
+            return activeIndex == 0 && measureIndex.Value == 0;
+        }
+
+        /// <summary>
+        /// 位置のティックを計算します。
+        /// </summary>
+        /// <param name="measureLength">小節長</param>
+        /// <param name="tpb">TPB</param>
+        /// <returns>計算されたティック</returns>
         public Tick CalculateTick(MeasureLength measureLength, Tpb tpb)
         {
-            var tick = tpb.Value * measureLength.BeatsCount * Position01;
+            var tick = tpb.Value * measureLength.GetBeatCount() * Position01;
             return new Tick(tick);
         }
 
+        /// <summary>
+        /// 位置のティックをint型で計算します。
+        /// </summary>
+        /// <param name="measureLength">小節長</param>
+        /// <param name="tpb">TPB</param>
+        /// <returns>計算されたティック（int）</returns>
         public int CalculateTickInt(MeasureLength measureLength, Tpb tpb)
         {
-            var tick = tpb.Value * measureLength.BeatsCount * Position01;
+            var tick = tpb.Value * measureLength.GetBeatCount() * Position01;
             return (int)Math.Floor(tick); // 小数点以下切り捨て
         }
 
         public Position AddDistance(Distance distance, MeasureLengthProvider measureLengthProvider)
         {
-            var totalBeatscount = GetTotalBeatsCount(measureLengthProvider);
-            totalBeatscount += distance.BeatsCount;
-            return CreateFromBeatsCount(totalBeatscount, measureLengthProvider);
+            var totalQuarterNotescount = GetTotalQuarterNoteCount(measureLengthProvider);
+            totalQuarterNotescount += distance.QuarterNoteCount;
+            return CreateFromQuarterNotesCount(totalQuarterNotescount, measureLengthProvider);
         }
 
         /// <summary>
@@ -100,49 +121,51 @@ namespace Uoc.Chart
         /// </summary>
         /// <param name="oldMeasureLengthProvider">変更前の小節長プロバイダ</param>
         /// <param name="newMeasureLengthProvider">変更後の小節長プロバイダ</param>
-        /// <returns></returns>
+        /// <returns>再計算されたPosition</returns>
         public Position RecalculatePosition(MeasureLengthProvider oldMeasureLengthProvider, MeasureLengthProvider newMeasureLengthProvider)
         {
-            var totalBeatsCount = GetTotalBeatsCount(oldMeasureLengthProvider);
-            return CreateFromBeatsCount(totalBeatsCount, newMeasureLengthProvider);
+            var totalBeatsCount = GetTotalQuarterNoteCount(oldMeasureLengthProvider);
+            return CreateFromQuarterNotesCount(totalBeatsCount, newMeasureLengthProvider);
         }
 
         /// <summary>
-        /// 譜面位置までの拍数を求めます。
+        /// 譜面位置までの四分音符の数を求めます。
         /// </summary>
         /// <param name="measureLengthProvider">小節長プロバイダ</param>
-        /// <returns>譜面位置までの拍数</returns>
-        public float GetTotalBeatsCount(MeasureLengthProvider measureLengthProvider)
+        /// <returns>譜面位置までの四分音符の数</returns>
+        public float GetTotalQuarterNoteCount(MeasureLengthProvider measureLengthProvider)
         {
             var totalBeatsCount = 0f;
             for (int i = 0; i < measureIndex.Value; i++)
             {
-                totalBeatsCount += measureLengthProvider.GetMeasureLengthAt(i).BeatsCount;
+                totalBeatsCount += measureLengthProvider.GetMeasureLengthAt(i).GetQuarterNoteCount();
             }
-            totalBeatsCount += Position01 * measureLengthProvider.GetMeasureLengthAt(measureIndex.Value).BeatsCount;
+            totalBeatsCount += Position01 * measureLengthProvider.GetMeasureLengthAt(measureIndex.Value).GetQuarterNoteCount();
             return totalBeatsCount;
         }
 
         /// <summary>
-        /// 譜面位置までの拍数からPositionを作成します。
+        /// 譜面位置までの四分音符の数からPositionを作成します。
         /// </summary>
-        /// <param name="beatsCount">譜面位置までの拍数</param>
+        /// <param name="beatsCount">譜面位置までの四分音符の数</param>
         /// <param name="measureLengthProvider">小節長プロバイダ</param>
         /// <returns>Positionインスタンス</returns>
-        private static Position CreateFromBeatsCount(float beatsCount, MeasureLengthProvider measureLengthProvider)
+        private static Position CreateFromQuarterNotesCount(float beatsCount, MeasureLengthProvider measureLengthProvider)
         {
-            var remainingBeatsCount = beatsCount;
+            var remainingQuarterNotesCount = beatsCount;
             var measureIndex = 0;
 
             // どの小節に属するかを判定
-            while (remainingBeatsCount >= measureLengthProvider.GetMeasureLengthAt(measureIndex).BeatsCount)
+            while (remainingQuarterNotesCount >= measureLengthProvider.GetMeasureLengthAt(measureIndex).GetQuarterNoteCount())
             {
-                remainingBeatsCount -= measureLengthProvider.GetMeasureLengthAt(measureIndex).BeatsCount;
+                remainingQuarterNotesCount -= measureLengthProvider.GetMeasureLengthAt(measureIndex).GetQuarterNoteCount();
                 measureIndex++;
             }
 
-            var numerator = remainingBeatsCount / measureLengthProvider.GetMeasureLengthAt(measureIndex).BeatsCount;
+            var numerator = remainingQuarterNotesCount / measureLengthProvider.GetMeasureLengthAt(measureIndex).GetQuarterNoteCount();
             var denominator = 1;
+
+            // 小数がなくなるまで10倍する（Positionのコンストラクタ内で約分されます）
             while (numerator % 1 != 0)
             {
                 numerator *= 10;
@@ -171,7 +194,6 @@ namespace Uoc.Chart
         public bool Equals(Position? other)
         {
             return other is not null &&
-                   EqualityComparer<MeasureIndex>.Default.Equals(measureIndex, other.measureIndex) &&
                    sectionCount == other.sectionCount &&
                    activeIndex == other.activeIndex &&
                    measureIndex == other.measureIndex;
@@ -180,6 +202,8 @@ namespace Uoc.Chart
         public int CompareTo(Position? other)
         {
             if (other == null) throw new ArgumentNullException(nameof(other));
+
+            // FIXME: 比較する位置の小節長が異なる場合は正確な比較ができない
             var scale = measureIndex.Value + Position01;
             var otherScale = other.measureIndex.Value + other.Position01;
             return scale.CompareTo(otherScale);
