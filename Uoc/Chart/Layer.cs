@@ -10,6 +10,8 @@ namespace Uoc.Chart
     /// </summary>
     public class Layer : IEquatable<Layer>
     {
+        private static readonly Regex layerRegex = new Regex(@"\s*LAYER\s*:\s*(\d+)\s*", RegexOptions.Compiled);
+
         private const string LAYER_LINE_HEADER = "LAYER";
         private const int LAYER_MIN = 0;
         private const int LAYER_MAX = 30; // 仕様で定義されるレイヤーは30まで
@@ -36,13 +38,13 @@ namespace Uoc.Chart
                  * 想定入力形式
                  * "LAYER:n"（nはレイヤー値）
                  */
-                var match = Regex.Match(uocLine.LineText, @"\s*LAYER\s*:\s*(\d+)\s*");
+                var match = layerRegex.Match(uocLine.LineText);
                 int layer = int.Parse(match.Groups[1].Value);
                 return new Layer(layer);
             }
             catch (Exception e)
             {
-                throw new InvalidOperationException($"行「{uocLine}」をレイヤーに変換できません。", e);
+                throw new FormatException($"行「{uocLine}」をレイヤーに変換できません。", e);
             }
         }
 
