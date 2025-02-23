@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Uoc.Chart.Notes
@@ -67,7 +68,7 @@ namespace Uoc.Chart.Notes
         /// <param name="note">ノート</param>
         /// <param name="noteGroup">指定されたノートが所属しているグループ（ノートがグループに所属していなかった場合はnull）</param>
         /// <returns>グループを取得できたかどうか</returns>
-        public bool TryGetNoteBelongingGroup(NoteProfile note, out NoteGroupProfile noteGroup)
+        public bool TryGetNoteBelongingGroup(NoteProfile note, [MaybeNullWhen(false)] out NoteGroupProfile noteGroup)
         {
             foreach (var noteGroupProfile in noteGroupProfiles)
             {
