@@ -4,6 +4,9 @@ using Uoc.Chart;
 
 namespace Uoc.Analyze
 {
+    /// <summary>
+    /// CHARTセクションに所属する行のコレクション
+    /// </summary>
     internal class ChartSectionLineCollection
     {
         private readonly IReadOnlyList<ChartSectionLine> chartSectionLines;

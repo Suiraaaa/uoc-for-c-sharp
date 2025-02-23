@@ -11,19 +11,21 @@ namespace Uoc.Analyze
     /// </summary>
     internal class NotesDefsSectionLine
     {
+        private static readonly Regex lineTypeRegex = new(@"^(NOTEDEF|NOTEGROUPDEF).*$", RegexOptions.Compiled);
+        private static readonly Regex quotedValueRegex = new(@"""(.*?)""", RegexOptions.Compiled);
+
         private readonly string definitionId;
         private readonly NotesDefsSectionLineType lineType;
         private readonly IReadOnlyList<string> lineProperties;
 
-        public NotesDefsSectionLine(string definitionId, NotesDefsSectionLineType lineType, IReadOnlyList<string> lineProperties)
+        private NotesDefsSectionLine(string definitionId, NotesDefsSectionLineType lineType, IReadOnlyList<string> lineProperties)
         {
             if (string.IsNullOrWhiteSpace(definitionId)) throw new ArgumentException(nameof(definitionId));
             if (definitionId.Contains(' ')) throw new ArgumentException($"定義IDに空白を含めることはできません。(入力値: {definitionId})");
-            if (lineProperties == null) throw new ArgumentNullException(nameof(lineProperties));
 
             this.definitionId = definitionId;
             this.lineType = lineType;
-            this.lineProperties = lineProperties;
+            this.lineProperties = lineProperties ?? throw new ArgumentNullException(nameof(lineProperties));
         }
 
         public static NotesDefsSectionLine ParseUocLine(UocLine line)
@@ -35,19 +37,19 @@ namespace Uoc.Analyze
                  * NOTEDEF "Tap", "x", "size"
                  * NOTEGROUPDEF "Hold", "HoldStart", "HoldEnd"
                  */
-                var match = Regex.Match(line.LineText, @"^(NOTEDEF|NOTEGROUPDEF).*$");
+                var match = lineTypeRegex.Match(line.LineText);
                 if (!match.Success)
                 {
-                    throw new Exception("正規表現によるパースに失敗しました。");
+                    throw new FormatException("行種別の抽出に失敗しました。");
                 }
                 var lineType = NotesDefsSectionLineTypeMapper.GetNotesLineType(match.Groups[1].Value);
 
-                var valueMatches = Regex.Matches(line.LineText, @"\""(.*?)\""");
+                var valueMatches = quotedValueRegex.Matches(line.LineText);
                 foreach (var valueMatch in valueMatches.Cast<Match>())
                 {
                     if (!valueMatch.Success)
                     {
-                        throw new Exception("正規表現によるパースに失敗しました。");
+                        throw new FormatException("引用符で囲まれた値の抽出に失敗しました。");
                     }
                 }
                 var definitionId = valueMatches[0].Groups[1].Value;

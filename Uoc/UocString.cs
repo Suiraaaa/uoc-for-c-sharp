@@ -3,21 +3,21 @@ using System;
 namespace Uoc
 {
     /// <summary>
-    /// UOC文字列クラス
+    /// UOCファイルの文字列を保持するクラス
     /// </summary>
     public class UocString
     {
-        private readonly string uocString;
+        private readonly string value;
 
-        public UocString(string uocString)
+        public UocString(string value)
         {
-            if (string.IsNullOrWhiteSpace(uocString)) throw new ArgumentException(nameof(uocString));
-            this.uocString = uocString;
+            if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException(nameof(value));
+            this.value = value;
         }
 
         /// <summary>
         /// UOC文字列
         /// </summary>
-        public string String => uocString;
+        public string Value => value;
     }
 }

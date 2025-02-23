@@ -17,7 +17,7 @@ namespace Uoc.Analyze
             if (value[0] == '-')
             {
                 isNegative = true;
-                value = value.Substring(1, value.Length - 1);
+                value = value[1..];
             }
             if (value.Any(c => !DIGITS.Contains(c))) throw new ArgumentException("Invalid value: \"" + value + "\".");
 

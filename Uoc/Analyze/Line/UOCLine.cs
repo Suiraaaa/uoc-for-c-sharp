@@ -8,14 +8,15 @@ namespace Uoc.Analyze
     /// </summary>
     internal class UocLine
     {
+        private static readonly Regex sectionStartLineRegex = new(@"^\s*(@)\s*(.*)$", RegexOptions.Compiled);
+        private static readonly Regex dataLineRegex = new(@"^\s*(#)\s*(.*)$", RegexOptions.Compiled);
+
         private readonly LineType lineType;
         private readonly string lineText;
         private readonly string originalLineText;
 
         private UocLine(LineType lineType, string lineText, string originalLineText)
         {
-
-
             this.lineType = lineType;
             this.lineText = lineText;
             this.originalLineText = originalLineText;
@@ -27,14 +28,16 @@ namespace Uoc.Analyze
             {
                 return new UocLine(LineType.Empty, string.Empty, string.Empty);
             }
+
+            // セクション開始行の場合のパース
             if (line.Contains('@'))
             {
                 try
                 {
-                    var match = Regex.Match(line, @"^\s*(@)\s*(.*)$");
+                    var match = sectionStartLineRegex.Match(line);
                     if (!match.Success)
                     {
-                        throw new Exception("正規表現によるパースに失敗しました。");
+                        throw new FormatException("正規表現によるパースに失敗しました。");
                     }
                     return new UocLine(LineType.SectionHead, match.Groups[2].Value, line);
                 }
@@ -43,13 +46,16 @@ namespace Uoc.Analyze
                     throw new Exception($"文字列\"{line}\"をUOC行にパースできませんでした。", e);
                 }
             }
+
+            // データ行の場合のパース
             if (line.Contains('#'))
             {
                 try
                 {
-                    var match = Regex.Match(line, @"^\s*(#)\s*(.*)$"); if (!match.Success)
+                    var match = dataLineRegex.Match(line);
+                    if (!match.Success)
                     {
-                        throw new Exception("正規表現によるパースに失敗しました。");
+                        throw new FormatException("正規表現によるパースに失敗しました。");
                     }
                     return new UocLine(LineType.Data, match.Groups[2].Value, line);
                 }
@@ -58,6 +64,8 @@ namespace Uoc.Analyze
                     throw new Exception($"文字列\"{line}\"をUOC行にパースできませんでした。", e);
                 }
             }
+
+            // 上記に該当しない場合はコメント行とする
             return new UocLine(LineType.Comment, line, line);
         }
 

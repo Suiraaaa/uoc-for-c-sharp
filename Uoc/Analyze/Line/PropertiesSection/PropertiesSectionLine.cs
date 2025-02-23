@@ -9,10 +9,12 @@ namespace Uoc.Analyze
     /// </summary>
     internal class PropertiesSectionLine
     {
+        private static readonly Regex propertyRegex = new(@"^\s*(\S+)\s*:\s*""(.*)""\s*$", RegexOptions.Compiled);
+
         private readonly PropertyKey key;
         private readonly PropertyValue value;
 
-        public PropertiesSectionLine(PropertyKey key, PropertyValue value)
+        private PropertiesSectionLine(PropertyKey key, PropertyValue value)
         {
             this.key = key ?? throw new ArgumentNullException(nameof(key));
             this.value = value ?? throw new ArgumentNullException(nameof(value));
@@ -23,13 +25,12 @@ namespace Uoc.Analyze
             try
             {
                 /*
-                 * 想定入力形式
-                 * "nnn:"mmm""（nnnはプロパティキー, mmmはプロパティ値）
+                 * 想定入力形式: "nnn:"mmm""（nnnはプロパティキー, mmmはプロパティ値）
                  */
-                var match = Regex.Match(line.LineText, @"^\s*(\S+)\s*:\s*\""(.*)\""\s*$");
+                var match = propertyRegex.Match(line.LineText);
                 if (!match.Success)
                 {
-                    throw new Exception("正規表現によるパースに失敗しました。");
+                    throw new FormatException("正規表現によるパースに失敗しました。");
                 }
                 var key = new PropertyKey(match.Groups[1].Value);
                 var value = new PropertyValue(match.Groups[2].Value);
@@ -41,6 +42,10 @@ namespace Uoc.Analyze
             }
         }
 
+        /// <summary>
+        /// 行情報からPropertyを作成します。
+        /// </summary>
+        /// <returns>作成されたProperty</returns>
         public Property ToProperty()
         {
             return new Property(key, value);

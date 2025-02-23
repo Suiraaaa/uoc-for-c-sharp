@@ -25,7 +25,7 @@ namespace Uoc.Analyze
         /// <summary>
         /// 行情報からNoteDefコレクションを作成します。
         /// </summary>
-        /// <returns>NoteDefコレクション</returns>
+        /// <returns>作成されたNoteDefコレクション</returns>
         public NoteDefCollection CreateNoteDefCollection()
         {
             var noteDefs = new List<NoteDef>();
@@ -41,6 +41,7 @@ namespace Uoc.Analyze
         /// <summary>
         /// 行情報からNoteGroupDefコレクションを作成します。
         /// </summary>
+        /// <returns>作成されたNoteGroupDefコレクション</returns>
         public NoteGroupDefCollection CreateNoteGroupDefCollection()
         {
             var noteGroupDefs = new List<NoteGroupDef>();

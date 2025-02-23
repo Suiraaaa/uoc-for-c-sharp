@@ -11,13 +11,15 @@ namespace Uoc.Analyze
     /// </summary>
     internal class ChartSectionLine
     {
+        private static readonly Regex chartLineRegex = new( @"^\s*(\d{3})(\d)([A-Z0-9]{2})?\s*:\s*(\d+)(?:\s*,\s*(.*))*?$", RegexOptions.Compiled);
+
         private readonly IReadOnlyList<Position> positions;
         private readonly IReadOnlyList<string> propertyValues;
         private readonly Layer layer;
         private readonly Channel channel;
         private readonly NoteDefIndex noteDefIndex;
 
-        public ChartSectionLine(IReadOnlyList<Position> positions, IReadOnlyList<string> propertyValues, Layer layer, Channel channel, NoteDefIndex noteDefIndex)
+        private ChartSectionLine(IReadOnlyList<Position> positions, IReadOnlyList<string> propertyValues, Layer layer, Channel channel, NoteDefIndex noteDefIndex)
         {
             this.positions = positions ?? throw new ArgumentNullException(nameof(positions));
             this.layer = layer ?? throw new ArgumentNullException(nameof(layer));
@@ -37,10 +39,10 @@ namespace Uoc.Analyze
                 * "0004 : 0100, 3, 4"
                 * "002501 : 0100, 3, 4"
                 */
-                var match = Regex.Match(line.LineText, @"^\s*(\d{3})(\d)([A-Z0-9]{2})?\s*:\s*(\d+)(?:\s*,\s*(.*))*?$");
+                var match = chartLineRegex.Match(line.LineText);
                 if (!match.Success)
                 {
-                    throw new Exception("正規表現によるパースに失敗しました。");
+                    throw new FormatException("正規表現によるパースに失敗しました。");
                 }
                 var measureIndex = new MeasureIndex(int.Parse(match.Groups[1].Value));
                 var noteDefIndex = new NoteDefIndex(int.Parse(match.Groups[2].Value));
@@ -48,7 +50,7 @@ namespace Uoc.Analyze
                 var positionsString = match.Groups[4].Value;
                 var propertyValues = string.IsNullOrWhiteSpace(match.Groups[5].Value) ? new string[0] : match.Groups[5].Value.Replace(" ", "").Split(',');
 
-                // すべての位置を求める
+                // すべての位置を求める（positionsString内の各文字について '1' の位置をPositionとして記録）
                 var positions = new List<Position>();
                 for (int i = 0; i < positionsString.Length; i++)
                 {

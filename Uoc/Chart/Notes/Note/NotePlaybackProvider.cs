@@ -298,10 +298,10 @@ namespace Uoc.Chart.Notes
 
         private long GetInstantiateTiming(AnalysisSetting analysisSetting, MeasureIndex maxMeasureIndex)
         {
-            var minTiming = analysisSetting.MinTiming;
-            var interval = analysisSetting.NotesInstantiateTimingInterval;
+            var minimumTiming = analysisSetting.MinimumTiming;
+            var interval = analysisSetting.NotesInstantiationInterval;
             var maxTiming = (long)CalculateMeasureStartTiming(maxMeasureIndex.Value + 1); // 最大のタイミングを、ノートが存在する最大小節の次の小節の開始点とする。
-            for (long i = minTiming; i < maxTiming; i += interval)
+            for (long i = minimumTiming; i < maxTiming; i += interval)
             {
                 var position = CalculateNotePosition(i);
                 if (position < 1f)

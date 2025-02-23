@@ -16,10 +16,15 @@ namespace Uoc.Analyze
             this.lines = lines ?? throw new ArgumentNullException(nameof(lines));
         }
 
+        /// <summary>
+        /// UOC文字列から行情報のコレクションを生成します。
+        /// </summary>
+        /// <param name="uocString">パース対象のUOC文字列</param>
+        /// <returns>生成されたUocLineCollection</returns>
         public static UocLineCollection Parse(UocString uocString)
         {
             var lines = new List<UocLine>();
-            var stringReader = new StringReader(uocString.String);
+            var stringReader = new StringReader(uocString.Value);
             while (stringReader.Peek() > -1)
             {
                 var line = UocLine.Parse(stringReader.ReadLine());

@@ -20,7 +20,7 @@ namespace Uoc
 
         public static UocData Create(UocString uocString, AnalysisSetting analysisSetting)
         {
-            var uocObject = UocObject.Parse(uocString);
+            var uocObject = UocParser.Parse(uocString);
             var chartPropertyGroup = uocObject.ChartPropertyGroup;
             var tpb = chartPropertyGroup.GetTpb();
             var chartData = ChartData.Create(uocObject.NoteProfileCollection, uocObject.NoteGroupProfileCollection, analysisSetting, tpb);
