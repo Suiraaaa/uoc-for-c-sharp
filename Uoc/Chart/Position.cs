@@ -165,6 +165,7 @@ namespace Uoc.Chart
             var numerator = remainingQuarterNotesCount / measureLengthProvider.GetMeasureLengthAt(measureIndex).GetQuarterNoteCount();
             var denominator = 1;
 
+            // FIXME: 浮動小数点の丸め誤差により無限ループに陥る可能性がある
             // 小数がなくなるまで10倍する（Positionのコンストラクタ内で約分されます）
             while (numerator % 1 != 0)
             {
