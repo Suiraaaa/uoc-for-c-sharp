@@ -3,7 +3,8 @@ using System;
 namespace Uoc.Chart
 {
     /// <summary>
-    /// プロパティ
+    /// プロパティを表すクラス
+    /// キー（PropertyKey）と値（PropertyValue）を持つ
     /// </summary>
     public class Property
     {

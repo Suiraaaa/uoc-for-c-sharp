@@ -10,7 +10,7 @@ namespace Uoc.Chart
     /// </summary>
     public class Layer : IEquatable<Layer>
     {
-        private static readonly Regex layerRegex = new Regex(@"\s*LAYER\s*:\s*(\d+)\s*", RegexOptions.Compiled);
+        private static readonly Regex layerRegex = new(@"\s*LAYER\s*:\s*(\d+)\s*", RegexOptions.Compiled);
 
         private const string LAYER_LINE_HEADER = "LAYER";
         private const int LAYER_MIN = 0;

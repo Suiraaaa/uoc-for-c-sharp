@@ -18,16 +18,15 @@ namespace Uoc.Chart
 
         public PropertyGroup(IReadOnlyList<Property> properties)
         {
-            if (properties == null) throw new ArgumentNullException(nameof(properties));
-            this.properties = properties;
+            this.properties = properties ?? throw new ArgumentNullException(nameof(properties));
         }
 
         /// <summary>
         /// キー配列と値配列からプロパティグループを作成します。
         /// それぞれの配列の番号同士が対応します。
         /// </summary>
-        /// <returns>プロパティグループ</returns>
-        public static PropertyGroup MargeKeysAndValues(IReadOnlyList<string> keys, IReadOnlyList<string> values)
+        /// <returns>作成されたプロパティグループインスタンス</returns>
+        public static PropertyGroup MergeKeysAndValues(IReadOnlyList<string> keys, IReadOnlyList<string> values)
         {
             if (keys == null) throw new ArgumentNullException(nameof(keys));
             if (values == null) throw new ArgumentNullException(nameof(values));
@@ -47,16 +46,16 @@ namespace Uoc.Chart
         /// <summary>
         /// キー名の配列から、値を持たないプロパティグループを作成します。
         /// </summary>
-        /// <param name="uocPropertyNames">キー名の配列</param>
-        /// <returns>UocPropertyGroupインスタンス</returns>
+        /// <param name="propertyNames">キー名の配列</param>
+        /// <returns>作成されたプロパティグループインスタンス</returns>
         public static PropertyGroup CreateFromPropertyNames(IReadOnlyList<string> propertyNames)
         {
-            List<Property> properties = new List<Property>();
+            List<Property> properties = new();
             foreach (string propertyName in propertyNames)
             {
-                var propertyKay = new PropertyKey(propertyName);
+                var propertyKey = new PropertyKey(propertyName);
                 var propertyValue = PropertyValue.Empty;
-                var property = new Property(propertyKay, propertyValue);
+                var property = new Property(propertyKey, propertyValue);
                 properties.Add(property);
             }
             return new PropertyGroup(properties);
@@ -96,20 +95,20 @@ namespace Uoc.Chart
         }
 
         /// <summary>
-        /// 指定されたキーのプロパティが存在する場合にtrueを返します。
+        /// 指定されたキーを持つプロパティが存在する場合にtrueを返します。
         /// </summary>
         /// <param name="key">検証対象キー文字列</param>
-        /// <returns>指定されたキーのプロパティが存在するかどうか</returns>
+        /// <returns>指定されたキーを持つプロパティが存在するかどうか</returns>
         public bool HasKey(string key)
         {
             return HasKey(new PropertyKey(key));
         }
 
         /// <summary>
-        /// 指定されたキーのプロパティが存在する場合にtrueを返します。
+        /// 指定されたキーを持つプロパティが存在する場合にtrueを返します。
         /// </summary>
         /// <param name="key">検証対象キー</param>
-        /// <returns>指定されたキーのプロパティが存在するかどうか</returns>
+        /// <returns>指定されたキーを持つプロパティが存在するかどうか</returns>
         public bool HasKey(PropertyKey key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
@@ -135,7 +134,7 @@ namespace Uoc.Chart
         /// 同一キーを持つプロパティがすでに存在している場合は、そのプロパティの値を更新します。
         /// </summary>
         /// <param name="property">新規プロパティ</param>
-        /// <returns>プロパティが更新されたインスタンス</returns>
+        /// <returns>プロパティが更新されたプロパティグループインスタンス</returns>
         public PropertyGroup AddOrUpdateProperty(Property property)
         {
             if (property == null) throw new ArgumentNullException(nameof(property));
@@ -159,7 +158,7 @@ namespace Uoc.Chart
         /// 同一キーを持つプロパティがすでに存在している場合は、そのプロパティの値を更新します。
         /// </summary>
         /// <param name="properties">新規プロパティリスト</param>
-        /// <returns>プロパティが更新されたインスタンス</returns>
+        /// <returns>プロパティが更新されたプロパティグループインスタンス</returns>
         public PropertyGroup AddOrUpdateProperties(IReadOnlyList<Property> properties)
         {
             if (properties == null) throw new ArgumentNullException(nameof(properties));
@@ -177,9 +176,13 @@ namespace Uoc.Chart
                     editingProperties[index] = editingProperties[index].UpdateValue(property.Value);
                 }
             }
-            return new PropertyGroup(properties);
+            return new PropertyGroup(editingProperties);
         }
 
+        /// <summary>
+        /// すべてのプロパティの値を文字列のリストとして取得します。
+        /// </summary>
+        /// <returns>すべてのプロパティの値リスト（文字列）</returns>
         public List<string> GetPropertyValueList()
         {
             return properties.Select(x => x.Value.AsString()).ToList();

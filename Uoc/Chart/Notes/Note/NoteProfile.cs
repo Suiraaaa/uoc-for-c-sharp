@@ -23,7 +23,7 @@ namespace Uoc.Chart.Notes
             this.layer = layer ?? throw new ArgumentNullException(nameof(layer));
             this.channel = channel ?? throw new ArgumentNullException(nameof(channel));
             this.guid = guid ?? throw new ArgumentNullException(nameof(guid));
-            propertyGroup = PropertyGroup.MargeKeysAndValues(noteDef.PropertyNames, propertyValues);
+            propertyGroup = PropertyGroup.MergeKeysAndValues(noteDef.PropertyNames, propertyValues);
         }
 
         public NoteProfile(NoteDef noteDef, Position position, IReadOnlyList<string> propertyValues, Layer layer, Channel channel)
@@ -33,7 +33,7 @@ namespace Uoc.Chart.Notes
             this.position = position ?? throw new ArgumentNullException(nameof(position));
             this.layer = layer ?? throw new ArgumentNullException(nameof(layer));
             this.channel = channel ?? throw new ArgumentNullException(nameof(channel));
-            propertyGroup = PropertyGroup.MargeKeysAndValues(noteDef.PropertyNames, propertyValues);
+            propertyGroup = PropertyGroup.MergeKeysAndValues(noteDef.PropertyNames, propertyValues);
             guid = new NoteGuid();
         }
 
