@@ -46,7 +46,7 @@ namespace Uoc.Analyze
                 }
                 var measureIndex = new MeasureIndex(Base36.Decode(match.Groups[1].Value));
                 var noteDefIndex = new NoteDefIndex(Base36.Decode(match.Groups[2].Value));
-                var channel = match.Groups[3].Success ? new Channel(match.Groups[3].Value) : Channel.Empty;
+                var channel = match.Groups[3].Success ? new Channel(Base36.Decode(match.Groups[3].Value)) : Channel.Empty;
                 var positionsString = match.Groups[4].Value;
                 var propertyValues = string.IsNullOrWhiteSpace(match.Groups[5].Value) ? new string[0] : match.Groups[5].Value.Replace(" ", "").Split(',');
 
