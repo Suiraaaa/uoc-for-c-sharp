@@ -12,10 +12,6 @@ namespace Uoc.Chart.Notes
         private static readonly IReadOnlyList<NoteDef> commonNoteDefs = new List<NoteDef>()
         {
             new NoteDef(
-                new NoteId("MeasureLine"),
-                new List<string>() { }
-            ),
-            new NoteDef(
                 new NoteId("BPMChange"),
                 new List<string>() { "bpm" }
             ),
@@ -37,8 +33,6 @@ namespace Uoc.Chart.Notes
             this.noteId = noteId ?? throw new ArgumentNullException(nameof(noteId));
             this.propertyNames = propertyNames ?? throw new ArgumentNullException(nameof(propertyNames));
         }
-
-        public static NoteDef MeasureLine => commonNoteDefs.First(x => x.NoteId.Value == "MeasureLine");
 
         public static NoteDef BpmChange => commonNoteDefs.First(x => x.NoteId.Value == "BPMChange");
 

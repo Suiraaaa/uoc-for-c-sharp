@@ -10,7 +10,6 @@ namespace Uoc.Chart
         // 仕様で定義されているキーの定数
         private const string KEY_GAME_ID = "GameID";
         private const string KEY_TICKS_PER_BEAT = "TicksPerBeat";
-        private const string KEY_TITLE = "Title";
 
         private readonly PropertyGroup propertyGroup;
 
@@ -61,16 +60,6 @@ namespace Uoc.Chart
         {
             var value = GetPropertyByKey(KEY_TICKS_PER_BEAT).Value;
             return new Tpb(value.AsInt());
-        }
-
-        /// <summary>
-        /// タイトルを取得します。
-        /// </summary>
-        /// <returns>タイトル</returns>
-        public string GetTitle()
-        {
-            var value = GetPropertyByKey(KEY_TITLE).Value;
-            return value.AsString();
         }
     }
 }

@@ -36,13 +36,6 @@ namespace Uoc.Chart.Notes
             var noteProfiles = new List<NoteProfile>()
             {
                 new NoteProfile(
-                    noteDef: NoteDef.MeasureLine,
-                    position: Position.ChartStart,
-                    propertyValues: new List<string>() { },
-                    layer: layer,
-                    channel: Channel.Empty
-                ),
-                new NoteProfile(
                     noteDef: NoteDef.BpmChange,
                     position: Position.ChartStart,
                     propertyValues: new List<string>() { bpm.Value.ToString() },

@@ -11,7 +11,7 @@ namespace Uoc.Analyze
     /// </summary>
     internal class ChartSectionLine
     {
-        private static readonly Regex chartLineRegex = new( @"^\s*(\d{3})(\d)([A-Z0-9]{2})?\s*:\s*(\d+)(?:\s*,\s*(.*))*?$", RegexOptions.Compiled);
+        private static readonly Regex chartLineRegex = new(@"^\s*([A-Z0-9]{3})([A-Z0-9]{2})([A-Z0-9]{2})?\s*:\s*(\d+)(?:\s*,\s*(.*))*?$", RegexOptions.Compiled);
 
         private readonly IReadOnlyList<Position> positions;
         private readonly IReadOnlyList<string> propertyValues;
@@ -44,8 +44,8 @@ namespace Uoc.Analyze
                 {
                     throw new FormatException("正規表現によるパースに失敗しました。");
                 }
-                var measureIndex = new MeasureIndex(int.Parse(match.Groups[1].Value));
-                var noteDefIndex = new NoteDefIndex(int.Parse(match.Groups[2].Value));
+                var measureIndex = new MeasureIndex(Base36.Decode(match.Groups[1].Value));
+                var noteDefIndex = new NoteDefIndex(Base36.Decode(match.Groups[2].Value));
                 var channel = match.Groups[3].Success ? new Channel(match.Groups[3].Value) : Channel.Empty;
                 var positionsString = match.Groups[4].Value;
                 var propertyValues = string.IsNullOrWhiteSpace(match.Groups[5].Value) ? new string[0] : match.Groups[5].Value.Replace(" ", "").Split(',');
