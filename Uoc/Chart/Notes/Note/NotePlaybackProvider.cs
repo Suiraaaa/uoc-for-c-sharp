@@ -13,7 +13,7 @@ namespace Uoc.Chart.Notes
 
         private readonly NoteProfile noteProfile;
         private readonly BpmProvider bpmProvider;
-        private readonly SpeedMultiplierProvider SpeedMultiplierProvider;
+        private readonly SpeedMultiplierProvider speedMultiplierProvider;
         private readonly MeasureLengthProvider measureLengthProvider;
         private readonly AnalysisSetting analysisSetting;
         private readonly Tpb tpb;
@@ -30,7 +30,7 @@ namespace Uoc.Chart.Notes
             this.tpb = tpb ?? throw new ArgumentNullException(nameof(tpb));
 
             bpmProvider = eventsProvider.BpmProvider;
-            SpeedMultiplierProvider = eventsProvider.SpeedMultiplierProvider;
+            speedMultiplierProvider = eventsProvider.SpeedMultiplierProvider;
             measureLengthProvider = eventsProvider.MeasureLengthProvider;
             instantiateTiming = GetInstantiateTiming(analysisSetting, maxMeasureIndex);
             enabledTiming = CalculateTimingFromPosition(noteProfile.Position);
@@ -110,14 +110,14 @@ namespace Uoc.Chart.Notes
             /* タイミングが負の場合、譜面始点のスピード倍率を適用する */
             if (timing < 0)
             {
-                var initialSpeedMultiplier = SpeedMultiplierProvider.GetSpeedMultiplierAt(0, noteProfile.Layer);
+                var initialSpeedMultiplier = speedMultiplierProvider.GetSpeedMultiplierAt(0, noteProfile.Layer);
                 return timing * initialSpeedMultiplier.Multiplier / basicSpeed.MoveDuration;
             }
 
             /* 小節線以降のハイスピを無視する処理 */
             if (analysisSetting.IgnoreSpeedChangesAfterJudgeLine && timing > enabledTiming)
             {
-                return (enabledTiming - timing) / basicSpeed.GetMoveDurationAsMilliseconds();
+                return (enabledTiming - timing) / basicSpeed.MoveDuration;
             }
 
             /* 計算するタイミング範囲を求める */
@@ -127,8 +127,8 @@ namespace Uoc.Chart.Notes
             /* 小節範囲内のスピード変動をすべて求める */
             var startMeasureIndex = CalculateMeasureIndexFromTiming(startTiming);
             var endMeasureIndex = CalculateMeasureIndexFromTiming(endTiming);
-            var preAppliedSpeedMultiplier = SpeedMultiplierProvider.GetSpeedMultiplierAt(startMeasureIndex, noteProfile.Layer);
-            var speedChangeEvents = SpeedMultiplierProvider.GetSpeedChangeEventsWithoutStartPoint(startMeasureIndex, endMeasureIndex, noteProfile.Layer);
+            var preAppliedSpeedMultiplier = speedMultiplierProvider.GetSpeedMultiplierAt(startMeasureIndex, noteProfile.Layer);
+            var speedChangeEvents = speedMultiplierProvider.GetSpeedChangeEventsWithoutStartPoint(startMeasureIndex, endMeasureIndex, noteProfile.Layer);
 
             /* スピード変動がない場合はそのまま返す */
             if (speedChangeEvents.Count == 0)
@@ -146,7 +146,7 @@ namespace Uoc.Chart.Notes
                 moveDist += (end - start) * speedMultiplier.Multiplier;
             }
 
-            return moveDist / basicSpeed.GetMoveDurationAsMilliseconds() * (timing > enabledTiming ? -1 : 1);
+            return moveDist / basicSpeed.MoveDuration * (timing > enabledTiming ? -1 : 1);
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace Uoc.Chart.Notes
         {
             var tick = CalculateTickFromPosition(position);
             var measureIndex = position.MeasureIndex.Value;
-            return CalculateTiming(tick, measureIndex);
+            return CalculateTiming(measureIndex, tick);
         }
 
         /// <summary>
@@ -222,22 +222,21 @@ namespace Uoc.Chart.Notes
             }
 
             float duration = 0;
-            bool completed = false;
             for (int i = 0; i < bpmChanges.Count + 1; i++)
             {
-                int startTick = i == 0 ? 0 : bpmChanges[i - 1].Tick.Value;
-                int endTick = bpmChanges[i].Tick.Value;
+                var bpm = i == 0 ? measureStartBpm : bpmChanges[i - 1].Bpm;
+                var startTick = i == 0 ? 0 : bpmChanges[i - 1].Tick.Value;
+                var endTick = i == bpmChanges.Count ? measureMaxTick : bpmChanges[i].Tick.Value;
                 if (endTick > maxTick)
                 {
                     endTick = maxTick;
-                    completed = true;
                 }
 
-                int tickDuration = endTick - startTick;
-                float applyingRatio = (float)tickDuration / measureMaxTick;
-                duration += CalculateQuarterNoteMilliseconds(measureStartBpm.Value) * measureLength.GetQuarterNoteCount() * applyingRatio;
+                var tickDuration = endTick - startTick;
+                var applyingRatio = (float)tickDuration / measureMaxTick;
+                duration += CalculateQuarterNoteMilliseconds(bpm.Value) * measureLength.GetQuarterNoteCount() * applyingRatio;
 
-                if (completed) break;
+                if (endTick == maxTick) break;
             }
             return duration;
         }
@@ -282,18 +281,18 @@ namespace Uoc.Chart.Notes
         private int CalculateMeasureIndexFromTiming(long timing)
         {
             if (timing < 0) throw new ArgumentException(nameof(timing)); // 小節番号が負の値を取ることはないためエラー
-            int measureInex = 0;
+            int measureIndex = 0;
             while (true)
             {
-                float measureStartTiming = CalculateMeasureStartTiming(measureInex);
+                float measureStartTiming = CalculateMeasureStartTiming(measureIndex);
                 if (measureStartTiming > timing)
                 {
-                    measureInex--;
+                    measureIndex--;
                     break;
                 }
-                measureInex++;
+                measureIndex++;
             }
-            return measureInex;
+            return measureIndex;
         }
 
         private long GetInstantiateTiming(AnalysisSetting analysisSetting, MeasureIndex maxMeasureIndex)
@@ -304,7 +303,7 @@ namespace Uoc.Chart.Notes
             for (long i = minimumTiming; i < maxTiming; i += interval)
             {
                 var position = CalculateNotePosition(i);
-                if (position < 1f)
+                if (position < 1f) // 位置が生成位置を通り越した場合
                 {
                     return i - interval;
                 }

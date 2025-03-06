@@ -16,15 +16,9 @@ namespace Uoc.Chart
         }
 
         /// <summary>
-        /// ノートが生成位置から判定位置まで移動するのにかかる時間
+        /// ノートが生成位置から判定位置まで移動するのにかかる時間（ミリ秒単位）
         /// </summary>
         public float MoveDuration => moveDuration;
-
-
-        public float GetMoveDurationAsMilliseconds()
-        {
-            return moveDuration * 1000f;
-        }
     }
 }
 
