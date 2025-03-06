@@ -8,9 +8,6 @@ namespace Uoc.Chart.Notes
     /// </summary>
     public class NotePlaybackProvider
     {
-        private const string KEY_X = "x";
-        private const string KEY_SIZE = "size";
-
         private readonly NoteProfile noteProfile;
         private readonly BpmProvider bpmProvider;
         private readonly SpeedMultiplierProvider speedMultiplierProvider;
@@ -60,34 +57,6 @@ namespace Uoc.Chart.Notes
         /// ノートのGuid
         /// </summary>
         public string Guid => noteProfile.Guid.Value;
-
-        /// <summary>
-        /// ノートの水平位置(PropertyKey:x)を取得します。
-        /// </summary>
-        /// <returns>ノートの水平位置</returns>
-        public int GetHorizontalPosition()
-        {
-            var propertyGroup = noteProfile.PropertyGroup;
-            if (!propertyGroup.HasKey(KEY_X))
-            {
-                throw new InvalidOperationException($"ノートは水平位置情報(x)を持っていません。(ノートID: {noteProfile.NoteDef.NoteId.Value})");
-            }
-            return propertyGroup.GetPropertyByKey(KEY_X).Value.AsInt();
-        }
-
-        /// <summary>
-        /// ノートのサイズ(PropertyKey:size)を取得します。
-        /// </summary>
-        /// <returns>ノートのサイズ</returns>
-        public int GetSize()
-        {
-            var propertyGroup = noteProfile.PropertyGroup;
-            if (!propertyGroup.HasKey(KEY_SIZE))
-            {
-                throw new InvalidOperationException($"ノートはサイズ情報(size)を持っていません。(ノートID: {noteProfile.NoteDef.NoteId.Value})");
-            }
-            return propertyGroup.GetPropertyByKey(KEY_SIZE).Value.AsInt();
-        }
 
         /*
          * ↓↓↓ 各種計算処理 ↓↓↓
