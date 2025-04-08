@@ -26,7 +26,7 @@ namespace Uoc.Chart.Notes
 
         public static Channel Empty => new();
 
-        public bool IsEmpty => value != null;
+        public bool IsEmpty => value == null;
 
 
         public int Value
