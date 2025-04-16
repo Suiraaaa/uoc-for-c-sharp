@@ -7,7 +7,7 @@ using Uoc.Chart.Notes;
 
 namespace Uoc
 {
-    internal class UocBuilder
+    public class UocBuilder
     {
         private const int MAX_LAYER = 30;
 
