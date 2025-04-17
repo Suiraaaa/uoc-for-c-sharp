@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Uoc.Chart;
 using Uoc.Chart.Notes;
 
-namespace UOCOriginalEditor.Edit
+namespace Uoc.Chart
 {
     /// <summary>
     /// ノートグループのチャンネルを提供するクラス
