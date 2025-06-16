@@ -10,9 +10,9 @@ namespace Uoc
     public readonly struct UocData
     {
         private readonly ChartPropertyGroup chartProperties;
-        private readonly ChartData chartData;
+        private readonly NotesData chartData;
 
-        public UocData(ChartPropertyGroup chartProperties, ChartData chartData)
+        public UocData(ChartPropertyGroup chartProperties, NotesData chartData)
         {
             this.chartProperties = chartProperties ?? throw new ArgumentNullException(nameof(chartProperties));
             this.chartData = chartData ?? throw new ArgumentNullException(nameof(chartData));
@@ -22,9 +22,13 @@ namespace Uoc
         {
             var uocObject = UocParser.Parse(uocString);
             var chartPropertyGroup = uocObject.ChartPropertyGroup;
+            var noteDefCollection = uocObject.NoteDefCollection;
+            var noteGroupDefCollection = uocObject.NoteGroupDefCollection;
+            var noteProfileCollection = uocObject.NoteProfileCollection;
+            var noteGroupProfileCollection = uocObject.NoteGroupProfileCollection;
             var tpb = chartPropertyGroup.GetTpb();
-            var chartData = ChartData.Create(uocObject.NoteProfileCollection, uocObject.NoteGroupProfileCollection, analysisSetting, tpb);
-            return new UocData(chartPropertyGroup, chartData);
+            var notesData = NotesData.Create(noteDefCollection, noteGroupDefCollection, noteProfileCollection, noteGroupProfileCollection, analysisSetting, tpb);
+            return new UocData(chartPropertyGroup, notesData);
         }
 
         /// <summary>
@@ -35,7 +39,7 @@ namespace Uoc
         /// <summary>
         /// 譜面データ
         /// </summary>
-        public ChartData ChartData => chartData;
+        public NotesData NotesData => chartData;
     }
 }
 

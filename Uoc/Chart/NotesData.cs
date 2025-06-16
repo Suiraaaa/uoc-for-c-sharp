@@ -6,25 +6,39 @@ using Uoc.Chart.Notes;
 namespace Uoc.Chart
 {
     /// <summary>
-    /// 譜面データ
+    /// ノーツデータ
     /// </summary>
-    public class ChartData
+    public class NotesData
     {
+        private readonly NoteDefCollection noteDefCollection;
+        private readonly NoteGroupDefCollection noteGroupDefCollection;
         private readonly NotePlaybackProviderCollection notePlaybackProviderCollection;
         private readonly NoteGroupPlaybackProviderCollection noteGroupPlaybackProviderCollection;
 
-        private ChartData(NotePlaybackProviderCollection notePlaybackProviderCollection, NoteGroupPlaybackProviderCollection noteGroupPlaybackProviderCollection)
+        private NotesData(NoteDefCollection noteDefCollection, NoteGroupDefCollection noteGroupDefCollection, NotePlaybackProviderCollection notePlaybackProviderCollection, NoteGroupPlaybackProviderCollection noteGroupPlaybackProviderCollection)
         {
+            this.noteDefCollection = noteDefCollection ?? throw new ArgumentNullException(nameof(noteDefCollection));
+            this.noteGroupDefCollection = noteGroupDefCollection ?? throw new ArgumentNullException(nameof(noteGroupDefCollection));
             this.notePlaybackProviderCollection = notePlaybackProviderCollection ?? throw new ArgumentNullException(nameof(notePlaybackProviderCollection));
             this.noteGroupPlaybackProviderCollection = noteGroupPlaybackProviderCollection ?? throw new ArgumentNullException(nameof(noteGroupPlaybackProviderCollection));
         }
 
-        public static ChartData Create(NoteProfileCollection noteProfiles, NoteGroupProfileCollection noteGroupProfiles, AnalysisSetting analysisSetting, Tpb tpb)
+        internal static NotesData Create(NoteDefCollection noteDefCollection, NoteGroupDefCollection noteGroupDefCollection, NoteProfileCollection noteProfiles, NoteGroupProfileCollection noteGroupProfiles, AnalysisSetting analysisSetting, Tpb tpb)
         {
             var notePlaybackProviders = NotePlaybackProviderCollection.FormNoteProfileCollection(noteProfiles, analysisSetting, tpb);
             var noteGroupPlaybackProviders = NoteGroupPlaybackProviderCollection.FormNoteProfileCollection(notePlaybackProviders, noteGroupProfiles);
-            return new ChartData(notePlaybackProviders, noteGroupPlaybackProviders);
+            return new NotesData(noteDefCollection, noteGroupDefCollection, notePlaybackProviders, noteGroupPlaybackProviders);
         }
+
+        /// <summary>
+        /// ノート定義コレクション
+        /// </summary>
+        public NoteDefCollection NoteDefCollection => noteDefCollection;
+
+        /// <summary>
+        /// ノートグループ定義コレクション
+        /// </summary>
+        public NoteGroupDefCollection NoteGroupDefCollection => noteGroupDefCollection;
 
         /// <summary>
         /// ノート再生プロバイダのリスト
