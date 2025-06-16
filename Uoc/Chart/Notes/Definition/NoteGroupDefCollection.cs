@@ -34,13 +34,23 @@ namespace Uoc.Chart.Notes
         /// </summary>
         /// <param name="noteId">検索対象ノートID</param>
         /// <returns>検証結果</returns>
-        public bool IsBelongAnyGroup(NoteId noteId)
+        public bool BelongsToAnyGroup(NoteId noteId)
+        {
+            return BelongsToAnyGroup(noteId.Value);
+        }
+
+        /// <summary>
+        /// 指定されたノートIDがいずれかのグループに所属しているかどうかを返します。
+        /// </summary>
+        /// <param name="noteId">検索対象ノートID</param>
+        /// <returns>検証結果</returns>
+        public bool BelongsToAnyGroup(string noteId)
         {
             foreach (var noteGroupDef in noteGroupDefs)
             {
                 foreach (var noteIdInNoteGroup in noteGroupDef.BelognsNoteIds)
                 {
-                    if (noteIdInNoteGroup == noteId)
+                    if (noteIdInNoteGroup.Value == noteId)
                     {
                         return true;
                     }

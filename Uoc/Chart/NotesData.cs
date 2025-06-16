@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using Uoc.Analyze;
 using Uoc.Chart.Notes;
@@ -44,7 +45,15 @@ namespace Uoc.Chart
         /// ノート再生プロバイダのリスト
         /// 生成タイミングで昇順
         /// </summary>
-        public IReadOnlyList<NotePlaybackProvider> NotePlaybackProviders => notePlaybackProviderCollection.NotePlaybackProviders;
+        public IReadOnlyList<NotePlaybackProvider> NotePlaybackProviders
+        {
+            get
+            {
+                return notePlaybackProviderCollection.NotePlaybackProviders
+                    .Where(x => !noteGroupDefCollection.BelongsToAnyGroup(x.NoteId))
+                    .ToList();
+            }
+        }
 
         /// <summary>
         /// ノートグループ再生プロバイダのリスト
