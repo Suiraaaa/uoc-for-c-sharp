@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Uoc.Analyze;
 
 namespace Uoc.Chart.Notes
@@ -29,8 +30,8 @@ namespace Uoc.Chart.Notes
             bpmProvider = eventsProvider.BpmProvider;
             speedMultiplierProvider = eventsProvider.SpeedMultiplierProvider;
             measureLengthProvider = eventsProvider.MeasureLengthProvider;
-            instantiateTiming = GetInstantiateTiming(analysisSetting, maxMeasureIndex);
             enabledTiming = CalculateTimingFromPosition(noteProfile.Position);
+            instantiateTiming = GetInstantiateTiming(analysisSetting, maxMeasureIndex);
         }
 
         /// <summary>
@@ -76,13 +77,6 @@ namespace Uoc.Chart.Notes
         {
             var basicSpeed = analysisSetting.BasicSpeed;
 
-            /* タイミングが負の場合、譜面始点のスピード倍率を適用する */
-            if (timing < 0)
-            {
-                var initialSpeedMultiplier = speedMultiplierProvider.GetSpeedMultiplierAt(0, noteProfile.Layer);
-                return timing * initialSpeedMultiplier.Multiplier / basicSpeed.MoveDuration;
-            }
-
             /* 小節線以降のハイスピを無視する処理 */
             if (analysisSetting.IgnoreSpeedChangesAfterJudgeLine && timing > enabledTiming)
             {
@@ -90,19 +84,21 @@ namespace Uoc.Chart.Notes
             }
 
             /* 計算するタイミング範囲を求める */
-            var startTiming = timing <= enabledTiming ? timing : enabledTiming;
-            var endTiming = timing <= enabledTiming ? enabledTiming : timing;
+            var startTiming = Math.Min(timing, enabledTiming);
+            var endTiming = Math.Max(timing, enabledTiming);
 
             /* 小節範囲内のスピード変動をすべて求める */
-            var startMeasureIndex = CalculateMeasureIndexFromTiming(startTiming);
-            var endMeasureIndex = CalculateMeasureIndexFromTiming(endTiming);
-            var preAppliedSpeedMultiplier = speedMultiplierProvider.GetSpeedMultiplierAt(startMeasureIndex, noteProfile.Layer);
-            var speedChangeEvents = speedMultiplierProvider.GetSpeedChangeEventsWithoutStartPoint(startMeasureIndex, endMeasureIndex, noteProfile.Layer);
+            //var startMeasureIndex = CalculateMeasureIndexFromTiming(startTiming);
+            //var endMeasureIndex = CalculateMeasureIndexFromTiming(endTiming);
+            //var preAppliedSpeedMultiplier = speedMultiplierProvider.GetSpeedMultiplierAt(Math.Min(startMeasureIndex, 0), noteProfile.Layer);
+            //var speedChangeEvents = speedMultiplierProvider.GetSpeedChangeEventsWithoutStartPoint(startMeasureIndex, endMeasureIndex, noteProfile.Layer);
+            var preAppliedSpeedMultiplier = new SpeedMultiplier(1.0f);
+            var speedChangeEvents = new List<SpeedChangeEvent>();
 
             /* スピード変動がない場合はそのまま返す */
             if (speedChangeEvents.Count == 0)
             {
-                return timing * preAppliedSpeedMultiplier.Multiplier / basicSpeed.MoveDuration;
+                return (enabledTiming - timing) * preAppliedSpeedMultiplier.Multiplier / basicSpeed.MoveDuration;
             }
 
             // 移動距離を計算
@@ -115,7 +111,54 @@ namespace Uoc.Chart.Notes
                 moveDist += (end - start) * speedMultiplier.Multiplier;
             }
 
-            return moveDist / basicSpeed.MoveDuration * (timing > enabledTiming ? -1 : 1);
+            //return moveDist / basicSpeed.MoveDuration * (timing > enabledTiming ? -1 : 1);
+            return 0;
+
+
+
+
+            //var basicSpeed = analysisSetting.BasicSpeed;
+
+            ///* タイミングが負の場合、譜面始点のスピード倍率を適用する */
+            //if (timing < 0)
+            //{
+            //    var initialSpeedMultiplier = speedMultiplierProvider.GetSpeedMultiplierAt(0, noteProfile.Layer);
+            //    return timing * initialSpeedMultiplier.Multiplier / basicSpeed.MoveDuration;
+            //}
+
+            ///* 小節線以降のハイスピを無視する処理 */
+            //if (analysisSetting.IgnoreSpeedChangesAfterJudgeLine && timing > enabledTiming)
+            //{
+            //    return (enabledTiming - timing) / basicSpeed.MoveDuration;
+            //}
+
+            ///* 計算するタイミング範囲を求める */
+            //var startTiming = Math.Min(timing, enabledTiming);
+            //var endTiming = Math.Max(timing, enabledTiming);
+
+            ///* 小節範囲内のスピード変動をすべて求める */
+            //var startMeasureIndex = CalculateMeasureIndexFromTiming(startTiming);
+            //var endMeasureIndex = CalculateMeasureIndexFromTiming(endTiming);
+            //var preAppliedSpeedMultiplier = speedMultiplierProvider.GetSpeedMultiplierAt(startMeasureIndex, noteProfile.Layer);
+            //var speedChangeEvents = speedMultiplierProvider.GetSpeedChangeEventsWithoutStartPoint(startMeasureIndex, endMeasureIndex, noteProfile.Layer);
+
+            ///* スピード変動がない場合はそのまま返す */
+            //if (speedChangeEvents.Count == 0)
+            //{
+            //    return (timing - enabledTiming) * preAppliedSpeedMultiplier.Multiplier / basicSpeed.MoveDuration;
+            //}
+
+            //// 移動距離を計算
+            //var moveDist = 0f;
+            //for (int i = 0; i < speedChangeEvents.Count + 1; i++)
+            //{
+            //    var speedMultiplier = i == 0 ? preAppliedSpeedMultiplier : speedChangeEvents[i - 1].SpeedMultiplier;
+            //    var start = i == 0 ? startTiming : CalculateTiming(speedChangeEvents[i - 1].MeasureIndex.Value, speedChangeEvents[i - 1].Tick.Value);
+            //    var end = i == speedChangeEvents.Count ? endTiming : CalculateTiming(speedChangeEvents[i].MeasureIndex.Value, speedChangeEvents[i].Tick.Value);
+            //    moveDist += (end - start) * speedMultiplier.Multiplier;
+            //}
+
+            //return moveDist / basicSpeed.MoveDuration * (timing > enabledTiming ? -1 : 1);
         }
 
         /// <summary>
@@ -140,6 +183,7 @@ namespace Uoc.Chart.Notes
         {
             var measureStartTiming = CalculateMeasureStartTiming(measureIndex);
             var measureDuration = CalculateMeasureDurationUpToTick(measureIndex, tick);
+            Console.Write($"[{measureDuration}]");
             return (long)(measureStartTiming + measureDuration);
         }
 
@@ -187,7 +231,8 @@ namespace Uoc.Chart.Notes
             // BPMの変動がない場合はそのまま
             if (bpmChanges.Count == 0)
             {
-                return CalculateQuarterNoteMilliseconds(measureStartBpm.Value) * measureLength.GetQuarterNoteCount();
+                var measureMilliseconds = CalculateQuarterNoteMilliseconds(measureStartBpm.Value) * measureLength.GetQuarterNoteCount();
+                return measureMilliseconds * ((float)maxTick / measureMaxTick);
             }
 
             float duration = 0;
@@ -272,9 +317,9 @@ namespace Uoc.Chart.Notes
             for (long i = minimumTiming; i < maxTiming; i += interval)
             {
                 var position = CalculateNotePosition(i);
-                if (position < 1f) // 位置が生成位置を通り越した場合
+                if (position <= 1f) // 位置が生成位置に到達した場合
                 {
-                    return i - interval;
+                    return Math.Max(i - interval, minimumTiming);
                 }
             }
             return maxTiming;
