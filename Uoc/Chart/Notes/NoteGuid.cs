@@ -8,14 +8,19 @@ namespace Uoc.Chart.Notes
     /// </summary>
     public class NoteGuid : IEquatable<NoteGuid>
     {
-        private readonly string value;
+        private readonly Guid value;
 
         public NoteGuid()
         {
-            value = Guid.NewGuid().ToString();
+            value = Guid.NewGuid();
         }
 
-        public string Value => value;
+        public NoteGuid(Guid guid)
+        {
+            value = guid;
+        }
+
+        public Guid Value => value;
 
         public override bool Equals(object obj)
         {

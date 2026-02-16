@@ -1,11 +1,14 @@
 using System;
-using Uoc.Chart;
+using Uoc.Analyze;
+using Uoc.Analyze.Playback;
 using Uoc.Chart.Notes;
+using Uoc.Chart.Notes.Definition;
+using Uoc.Chart.Property;
 
 namespace Uoc
 {
     /// <summary>
-    /// オブジェクト化されたUOCファイル情報を保持するクラス
+    /// UOCファイルに含まれるすべての情報を保持するクラス
     /// </summary>
     public class UocObject
     {
@@ -25,7 +28,7 @@ namespace Uoc
         }
 
         /// <summary>
-        /// 譜面プロパティグループ
+        /// 譜面プロパティ
         /// </summary>
         public ChartPropertyGroup ChartPropertyGroup => chartPropertyGroup;
 
@@ -45,8 +48,18 @@ namespace Uoc
         public NoteProfileCollection NoteProfileCollection => noteProfileCollection;
 
         /// <summary>
-        /// ノートプロファイルコレクション
+        /// ノートグループプロファイルコレクション
         /// </summary>
         public NoteGroupProfileCollection NoteGroupProfileCollection => noteGroupProfileCollection;
+
+        /// <summary>
+        /// 譜面再生データを作成します。
+        /// </summary>
+        /// <param name="analysisSetting">解析設定</param>
+        /// <returns>譜面再生データ</returns>
+        public ChartPlaybackData CreateChartPlaybackData(AnalysisSetting analysisSetting)
+        {
+            return ChartPlaybackData.Create(noteDefCollection, noteGroupDefCollection, noteProfileCollection, noteGroupProfileCollection, analysisSetting, chartPropertyGroup.GetTpb());
+        }
     }
 }

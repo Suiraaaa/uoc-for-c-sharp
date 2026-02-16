@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Uoc.Chart
+namespace Uoc.Chart.Event
 {
     /// <summary>
     /// 小節長情報を提供するクラス
@@ -11,7 +11,7 @@ namespace Uoc.Chart
     {
         private readonly IReadOnlyList<MeasureLengthChangeEvent> measureLengthChangeEvents;
 
-        public MeasureLengthProvider(IReadOnlyList<MeasureLengthChangeEvent> measureLengthChangeEvents)
+        internal MeasureLengthProvider(IReadOnlyList<MeasureLengthChangeEvent> measureLengthChangeEvents)
         {
             if (measureLengthChangeEvents == null) throw new ArgumentNullException(nameof(measureLengthChangeEvents));
             if (measureLengthChangeEvents.Count == 0) throw new ArgumentException("小節長変動イベントが含まれていません。");

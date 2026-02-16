@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Uoc.Chart
+namespace Uoc.Chart.Property
 {
     /// <summary>
     /// プロパティキー

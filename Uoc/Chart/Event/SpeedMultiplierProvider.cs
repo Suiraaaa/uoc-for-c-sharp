@@ -1,17 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Uoc.Analyze.Speed;
 
-namespace Uoc.Chart
+namespace Uoc.Chart.Event
 {
     /// <summary>
     /// スピード倍率情報を提供するクラス
     /// </summary>
     public class SpeedMultiplierProvider
     {
-        private readonly IReadOnlyList<SpeedChangeEvent> speedChangeEvents;
+        private readonly IReadOnlyList<SpeedMultiplierChangeEvent> speedChangeEvents;
 
-        public SpeedMultiplierProvider(IReadOnlyList<SpeedChangeEvent> speedChangeEvents)
+        internal SpeedMultiplierProvider(IReadOnlyList<SpeedMultiplierChangeEvent> speedChangeEvents)
         {
             if (speedChangeEvents == null) throw new ArgumentNullException(nameof(speedChangeEvents));
 
@@ -26,7 +27,7 @@ namespace Uoc.Chart
         /// <param name="measureIndex">小節番号</param>
         /// <param name="layer">対象レイヤー</param>
         /// <returns>指定された小節の始点スピード倍率</returns>
-        public SpeedMultiplier GetSpeedMultiplierAt(int measureIndex, Layer layer)
+        public SpeedMultiplier GetMeasureStartSpeedMultiplier(int measureIndex, Layer layer)
         {
             if (measureIndex < 0) throw new ArgumentOutOfRangeException(nameof(measureIndex));
             for (int i = speedChangeEvents.Count - 1; i >= 0; i--)
@@ -52,7 +53,7 @@ namespace Uoc.Chart
         /// <param name="endMeasureIndex">終了小節番号</param>
         /// <param name="layer">対象レイヤー</param>
         /// <returns>指定された小節範囲内のスピード変動イベントリスト</returns>
-        public IReadOnlyList<SpeedChangeEvent> GetSpeedChangeEventsWithoutStartPoint(int startMeasureIndex, int endMeasureIndex, Layer layer)
+        public IReadOnlyList<SpeedMultiplierChangeEvent> GetSpeedMultiplierChangeEventsAt(int startMeasureIndex, int endMeasureIndex, Layer layer)
         {
             if (startMeasureIndex < 0) throw new ArgumentOutOfRangeException(nameof(startMeasureIndex));
             if (endMeasureIndex < 0) throw new ArgumentOutOfRangeException(nameof(endMeasureIndex));

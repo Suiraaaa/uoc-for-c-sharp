@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Uoc.Chart
+namespace Uoc.Chart.Property
 {
     /// <summary>
     /// プロパティグループ
@@ -44,7 +44,7 @@ namespace Uoc.Chart
         }
 
         /// <summary>
-        /// キー名の配列から、値を持たないプロパティグループを作成します。
+        /// キーの配列から、値を持たないプロパティグループを作成します。
         /// </summary>
         /// <param name="propertyNames">キー名の配列</param>
         /// <returns>作成されたプロパティグループインスタンス</returns>
@@ -183,7 +183,7 @@ namespace Uoc.Chart
         /// すべてのプロパティの値を文字列のリストとして取得します。
         /// </summary>
         /// <returns>すべてのプロパティの値リスト（文字列）</returns>
-        public List<string> GetPropertyValueList()
+        public IReadOnlyList<string> GetPropertyValueList()
         {
             return properties.Select(x => x.Value.AsString()).ToList();
         }

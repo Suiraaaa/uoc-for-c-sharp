@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Uoc.Chart
+namespace Uoc.Chart.Event
 {
     /// <summary>
     /// BPM情報を提供するクラス
@@ -11,7 +11,7 @@ namespace Uoc.Chart
     {
         private readonly IReadOnlyList<BpmChangeEvent> bpmChangeEvents;
 
-        public BpmProvider(IReadOnlyList<BpmChangeEvent> bpmChangeEvents)
+        internal BpmProvider(IReadOnlyList<BpmChangeEvent> bpmChangeEvents)
         {
             if (bpmChangeEvents == null) throw new ArgumentNullException(nameof(bpmChangeEvents));
             if (bpmChangeEvents.Count == 0) throw new ArgumentException("BPM変動イベントが含まれていません。");

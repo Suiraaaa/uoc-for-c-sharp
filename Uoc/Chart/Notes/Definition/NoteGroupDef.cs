@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Uoc.Chart.Notes
+namespace Uoc.Chart.Notes.Definition
 {
 
     /// <summary>
@@ -10,12 +10,12 @@ namespace Uoc.Chart.Notes
     public class NoteGroupDef
     {
         private readonly NoteGroupId noteGroupId;
-        private readonly IReadOnlyList<NoteId> belognsNoteIds;
+        private readonly IReadOnlyList<NoteId> belongsNoteIds;
 
-        public NoteGroupDef(NoteGroupId noteGroupId, IReadOnlyList<NoteId> belognsNoteIds)
+        public NoteGroupDef(NoteGroupId noteGroupId, IReadOnlyList<NoteId> belongsNoteIds)
         {
             this.noteGroupId = noteGroupId ?? throw new ArgumentNullException(nameof(noteGroupId));
-            this.belognsNoteIds = belognsNoteIds ?? throw new ArgumentNullException(nameof(belognsNoteIds));
+            this.belongsNoteIds = belongsNoteIds ?? throw new ArgumentNullException(nameof(belongsNoteIds));
         }
 
         /// <summary>
@@ -26,16 +26,16 @@ namespace Uoc.Chart.Notes
         /// <summary>
         /// グループに所属するノートIDリスト
         /// </summary>
-        public IReadOnlyList<NoteId> BelognsNoteIds => belognsNoteIds;
+        public IReadOnlyList<NoteId> BelongsNoteIds => belongsNoteIds;
 
         /// <summary>
         /// グループの始点となるノートID
         /// </summary>
-        public NoteId StartNoteId => belognsNoteIds[0];
+        public NoteId StartNoteId => belongsNoteIds[0];
 
         /// <summary>
         /// グループの終点となるノートID
         /// </summary>
-        public NoteId EndNoteId => belognsNoteIds[^1];
+        public NoteId EndNoteId => belongsNoteIds[^1];
     }
 }

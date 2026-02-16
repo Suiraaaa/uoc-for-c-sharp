@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using Uoc.Analyze;
+using Uoc.Parse.Line;
 
 namespace Uoc.Chart
 {
@@ -12,16 +12,17 @@ namespace Uoc.Chart
     {
         private static readonly Regex layerRegex = new(@"\s*LAYER\s*:\s*(\d+)\s*", RegexOptions.Compiled);
 
-        private const string LAYER_LINE_HEADER = "LAYER";
-        private const int LAYER_MIN = 0;
-        private const int LAYER_MAX = 30; // 仕様で定義されるレイヤーは30まで
+        public const int MinLayerValue = 0;
+        public const int MaxLayerValue = 30; // 仕様で定義されるレイヤーは30まで
+
+        private const string layerLineHeader = "LAYER";
 
         private readonly int value;
 
         public Layer(int value)
         {
-            if (value < LAYER_MIN || LAYER_MAX < value)
-                throw new ArgumentOutOfRangeException($"レイヤーは{LAYER_MIN}以上{LAYER_MAX}以内の範囲である必要があります。(入力値: {value})");
+            if (value < MinLayerValue || MaxLayerValue < value)
+                throw new ArgumentOutOfRangeException($"レイヤーは{MinLayerValue}以上{MaxLayerValue}以内の範囲である必要があります。(入力値: {value})");
 
             this.value = value;
         }
@@ -50,7 +51,7 @@ namespace Uoc.Chart
 
         internal static bool CanFormUocLine(UocLine uocLine)
         {
-            return uocLine.LineText.Replace(" ", "")[..5] == LAYER_LINE_HEADER;
+            return uocLine.LineText.Replace(" ", "")[..5] == layerLineHeader;
         }
 
         public override bool Equals(object obj)

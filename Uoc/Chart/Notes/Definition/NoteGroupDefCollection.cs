@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Uoc.Chart.Notes
+namespace Uoc.Chart.Notes.Definition
 {
     /// <summary>
     /// ノートグループ定義のコレクション
@@ -48,7 +48,7 @@ namespace Uoc.Chart.Notes
         {
             foreach (var noteGroupDef in noteGroupDefs)
             {
-                foreach (var noteIdInNoteGroup in noteGroupDef.BelognsNoteIds)
+                foreach (var noteIdInNoteGroup in noteGroupDef.BelongsNoteIds)
                 {
                     if (noteIdInNoteGroup.Value == noteId)
                     {

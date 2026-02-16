@@ -3,7 +3,7 @@ using System;
 namespace Uoc
 {
     /// <summary>
-    /// UOCファイルの文字列を保持するクラス
+    /// UOC文字列を保持するクラス
     /// </summary>
     public class UocString
     {

@@ -1,29 +1,35 @@
 using System;
+using Uoc.Analyze.Speed;
 
 namespace Uoc.Chart.Event
 {
     /// <summary>
-    /// BPM変動イベント
+    /// スピード倍率変動イベント
     /// </summary>
-    public class BpmChangeEvent
+    public class SpeedMultiplierChangeEvent
     {
         private readonly Position position;
-        private readonly Bpm bpm;
+        private readonly Layer layer;
+        private readonly SpeedMultiplier speedMultiplier;
         private readonly Tick tick;
 
-        internal BpmChangeEvent(Position position, Bpm bpm, MeasureLengthProvider measureLengthProvider, Tpb tpb)
+        public SpeedMultiplierChangeEvent(Position position, Layer layer, SpeedMultiplier speedMultiplier, MeasureLengthProvider measureLengthProvider, Tpb tpb)
         {
             this.position = position ?? throw new ArgumentNullException(nameof(position));
-            this.bpm = bpm ?? throw new ArgumentNullException(nameof(bpm));
+            this.layer = layer ?? throw new ArgumentNullException(nameof(layer));
+            this.speedMultiplier = speedMultiplier ?? throw new ArgumentNullException(nameof(speedMultiplier));
 
             if (measureLengthProvider == null) throw new ArgumentNullException(nameof(measureLengthProvider));
             if (tpb == null) throw new ArgumentNullException(nameof(tpb));
             tick = GetTick(measureLengthProvider, tpb);
+
         }
 
         public MeasureIndex MeasureIndex => position.MeasureIndex;
 
-        public Bpm Bpm => bpm;
+        public Layer Layer => layer;
+
+        public SpeedMultiplier SpeedMultiplier => speedMultiplier;
 
         public Tick Tick => tick;
 

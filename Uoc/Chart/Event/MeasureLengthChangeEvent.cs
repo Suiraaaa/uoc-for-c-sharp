@@ -1,6 +1,6 @@
 using System;
 
-namespace Uoc.Chart
+namespace Uoc.Chart.Event
 {
     /// <summary>
     /// 小節長変動イベント

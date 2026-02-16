@@ -1,6 +1,6 @@
 using System;
 
-namespace Uoc.Chart
+namespace Uoc.Chart.Property
 {
     /// <summary>
     /// 譜面のプロパティグループ

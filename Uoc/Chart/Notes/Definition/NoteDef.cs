@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Uoc.Chart.Notes
+namespace Uoc.Chart.Notes.Definition
 {
     /// <summary>
     /// ノート定義

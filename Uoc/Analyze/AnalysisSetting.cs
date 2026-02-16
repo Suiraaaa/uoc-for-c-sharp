@@ -1,10 +1,10 @@
 using System;
-using Uoc.Chart;
+using Uoc.Analyze.Speed;
 
 namespace Uoc.Analyze
 {
     /// <summary>
-    /// UOCアセットの解析設定
+    /// UOCオブジェクトの解析設定を保持するクラス
     /// </summary>
     public class AnalysisSetting
     {

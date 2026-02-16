@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Uoc.Chart.Notes;
+using Uoc.Chart.Event;
 
 namespace Uoc.Chart
 {
@@ -44,7 +44,7 @@ namespace Uoc.Chart
         /// 指定された小節内の始点を表す位置
         /// </summary>
         /// <param name="measureIndex">小節番号</param>
-        /// <returns>指定された小節内の始点を表す位置</returns>
+        /// <returns>指定された小節内の始点を表す位置</retwAurns>
         public static Position MeasureStart(MeasureIndex measureIndex) => new(measureIndex, 1, 0);
 
         /// <summary>
@@ -109,6 +109,12 @@ namespace Uoc.Chart
             return (int)Math.Floor(tick); // 小数点以下切り捨て
         }
 
+        /// <summary>
+        /// 指定された距離をこの位置に加算した新しいPositionを返します。
+        /// </summary>
+        /// <param name="distance">距離</param>
+        /// <param name="measureLengthProvider">小節長プロバイダ</param>
+        /// <returns>距離が加算されたPosition</returns>
         public Position AddDistance(Distance distance, MeasureLengthProvider measureLengthProvider)
         {
             var totalQuarterNotescount = GetTotalQuarterNoteCount(measureLengthProvider);

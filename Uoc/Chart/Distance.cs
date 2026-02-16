@@ -1,11 +1,13 @@
 using System;
+using System.Collections.Generic;
+using Uoc.Chart.Event;
 
 namespace Uoc.Chart
 {
     /// <summary>
-    /// 譜面位置同士の距離を表すクラス
+    /// <see cref="Position"/>同士の距離を表すクラス
     /// </summary>
-    public class Distance
+    public class Distance : IEquatable<Distance>
     {
         private readonly float quarterNoteCount;
 
@@ -35,17 +37,38 @@ namespace Uoc.Chart
         public float QuarterNoteCount => quarterNoteCount;
 
         /// <summary>
-        /// 距離が負の方向を表すかどうか
-        /// </summary>
-        public bool IsNegative => quarterNoteCount < 0;
-
-        /// <summary>
         /// 距離の絶対値を求め、新たなDistanceオブジェクトとして返します。
         /// </summary>
         /// <returns>距離の絶対値</returns>
         public Distance Absolute()
         {
             return new Distance(Math.Abs(quarterNoteCount));
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return Equals(obj as Distance);
+        }
+
+        public bool Equals(Distance? other)
+        {
+            return other is not null &&
+                   quarterNoteCount == other.quarterNoteCount;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(quarterNoteCount);
+        }
+
+        public static bool operator ==(Distance? left, Distance? right)
+        {
+            return EqualityComparer<Distance?>.Default.Equals(left, right);
+        }
+
+        public static bool operator !=(Distance? left, Distance? right)
+        {
+            return !(left == right);
         }
     }
 }

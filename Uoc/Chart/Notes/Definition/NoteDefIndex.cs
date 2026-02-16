@@ -1,6 +1,6 @@
 using System;
 
-namespace Uoc.Chart.Notes
+namespace Uoc.Chart.Notes.Definition
 {
     /// <summary>
     /// ノート定義の番号
