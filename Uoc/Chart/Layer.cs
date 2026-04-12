@@ -1,0 +1,83 @@
+using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using Uoc.Parse.Line;
+
+namespace Uoc.Chart
+{
+    /// <summary>
+    /// レイヤー
+    /// </summary>
+    public class Layer : IEquatable<Layer>
+    {
+        private static readonly Regex layerRegex = new(@"\s*LAYER\s*:\s*(\d+)\s*", RegexOptions.Compiled);
+
+        public const int MinLayerValue = 0;
+        public const int MaxLayerValue = 30; // 仕様で定義されるレイヤーは30まで
+
+        private const string layerLineHeader = "LAYER";
+
+        private readonly int value;
+
+        public Layer(int value)
+        {
+            if (value < MinLayerValue || MaxLayerValue < value)
+                throw new ArgumentOutOfRangeException($"レイヤーは{MinLayerValue}以上{MaxLayerValue}以内の範囲である必要があります。(入力値: {value})");
+
+            this.value = value;
+        }
+
+        public int Value => value;
+
+        internal static Layer FormUocLine(UocLine uocLine)
+        {
+            if (!CanFormUocLine(uocLine)) throw new InvalidOperationException($"行「{uocLine}」はレイヤー定義行ではありません。");
+
+            try
+            {
+                /*
+                 * 想定入力形式
+                 * "LAYER:n"（nはレイヤー値）
+                 */
+                var match = layerRegex.Match(uocLine.LineText);
+                int layer = int.Parse(match.Groups[1].Value);
+                return new Layer(layer);
+            }
+            catch (Exception e)
+            {
+                throw new FormatException($"行「{uocLine}」をレイヤーに変換できません。", e);
+            }
+        }
+
+        internal static bool CanFormUocLine(UocLine uocLine)
+        {
+            return uocLine.LineText.Replace(" ", "")[..5] == layerLineHeader;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as Layer);
+        }
+
+        public bool Equals(Layer? other)
+        {
+            return other is not null &&
+                   value == other.value;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(value);
+        }
+
+        public static bool operator ==(Layer? left, Layer? right)
+        {
+            return EqualityComparer<Layer?>.Default.Equals(left, right);
+        }
+
+        public static bool operator !=(Layer? left, Layer? right)
+        {
+            return !(left == right);
+        }
+    }
+}
