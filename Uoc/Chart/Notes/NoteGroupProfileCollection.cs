@@ -73,7 +73,7 @@ namespace Uoc.Chart.Notes
         {
             foreach (var noteGroupProfile in noteGroupProfiles)
             {
-                if (noteGroupProfile.BelongsNotes.FirstOrDefault(x => x.Guid == note.Guid) != null)
+                if (noteGroupProfile.BelongsNotes.FirstOrDefault(x => x.NoteGuid == note.NoteGuid) != null)
                 {
                     noteGroup = noteGroupProfile;
                     return true;

@@ -86,7 +86,7 @@ namespace Uoc.Chart.Notes
 
         public NoteProfile GetNoteProfileByGuid(NoteGuid guid)
         {
-            return noteProfiles.FirstOrDefault(x => x.Guid == guid) ?? throw new KeyNotFoundException($"Guidが\"{guid}\"のノートは見つかりませんでした。");
+            return noteProfiles.FirstOrDefault(x => x.NoteGuid == guid) ?? throw new KeyNotFoundException($"Guidが\"{guid}\"のノートは見つかりませんでした。");
         }
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace Uoc.Chart.Notes
         public NoteProfileCollection PutOrReplace(NoteProfile putNoteProfile)
         {
             var editingNoteProfiles = new List<NoteProfile>(noteProfiles);
-            var sameGuidNoteIndex = editingNoteProfiles.FindIndex(x => x.Guid == putNoteProfile.Guid);
+            var sameGuidNoteIndex = editingNoteProfiles.FindIndex(x => x.NoteGuid == putNoteProfile.NoteGuid);
             if (sameGuidNoteIndex != -1)
             {
                 editingNoteProfiles[sameGuidNoteIndex] = putNoteProfile;
@@ -121,7 +121,7 @@ namespace Uoc.Chart.Notes
             var editingNoteProfiles = new List<NoteProfile>(noteProfiles);
             foreach (var putNoteProfile in putNoteProfiles)
             {
-                var sameGuidNoteIndex = editingNoteProfiles.FindIndex(x => x.Guid == putNoteProfile.Guid);
+                var sameGuidNoteIndex = editingNoteProfiles.FindIndex(x => x.NoteGuid == putNoteProfile.NoteGuid);
                 if (sameGuidNoteIndex != -1)
                 {
                     editingNoteProfiles[sameGuidNoteIndex] = putNoteProfile;
@@ -142,7 +142,7 @@ namespace Uoc.Chart.Notes
         public NoteProfileCollection Remove(NoteGuid guid)
         {
             var editingNoteProfiles = new List<NoteProfile>(noteProfiles);
-            editingNoteProfiles.RemoveAll(x => x.Guid == guid);
+            editingNoteProfiles.RemoveAll(x => x.NoteGuid == guid);
             return new NoteProfileCollection(editingNoteProfiles);
         }
 
@@ -156,7 +156,7 @@ namespace Uoc.Chart.Notes
             var editingNoteProfiles = new List<NoteProfile>(noteProfiles);
             foreach (var guid in guids)
             {
-                editingNoteProfiles.RemoveAll(x => x.Guid == guid);
+                editingNoteProfiles.RemoveAll(x => x.NoteGuid == guid);
             }
             return new NoteProfileCollection(editingNoteProfiles);
         }

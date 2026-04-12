@@ -61,7 +61,7 @@ namespace Uoc.Analyze.Playback
         /// <summary>
         /// ノートのGuid
         /// </summary>
-        public NoteGuid NoteGuid => noteProfile.Guid;
+        public NoteGuid NoteGuid => noteProfile.NoteGuid;
 
         /*
          * ↓↓↓ 各種計算処理 ↓↓↓

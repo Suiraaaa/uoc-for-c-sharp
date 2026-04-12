@@ -23,8 +23,8 @@ namespace Uoc.Analyze.Playback
                 var belongsNotePlaybackProviders = new List<NotePlaybackProvider>();
                 foreach (var note in noteGroupProfile.BelongsNotes)
                 {
-                    var belongsNotePlaybackProvider = notePlaybackProviderCollection.NotePlaybackProviders.FirstOrDefault(x => note.Guid.Value == x.Guid);
-                    if (belongsNotePlaybackProvider == null) throw new KeyNotFoundException($"Guidが\"{note.Guid.Value}\"のノートは見つかりませんでした。");
+                    var belongsNotePlaybackProvider = notePlaybackProviderCollection.NotePlaybackProviders.FirstOrDefault(x => note.NoteGuid.Value == x.NoteGuid.Value);
+                    if (belongsNotePlaybackProvider == null) throw new KeyNotFoundException($"Guidが\"{note.NoteGuid.Value}\"のノートは見つかりませんでした。");
                     belongsNotePlaybackProviders.Add(belongsNotePlaybackProvider);
                 }
                 var noteGroupPlaybackProvider = new NoteGroupPlaybackProvider(noteGroupProfile.NoteGroupDef.NoteGroupId, belongsNotePlaybackProviders);

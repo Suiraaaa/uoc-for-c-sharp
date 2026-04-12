@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Uoc.Analyze;
 using Uoc.Chart;
 using Uoc.Chart.Notes;
 
@@ -29,7 +28,7 @@ namespace Uoc.Analyze.Playback
 
         public NotePlaybackProvider GetNotePlaybackProviderByGuid(NoteGuid guid)
         {
-            return notePlaybackProviders.FirstOrDefault(x => x.Guid == guid.Value) ?? throw new KeyNotFoundException($"Guidが\"{guid}\"のノートは見つかりませんでした。");
+            return notePlaybackProviders.FirstOrDefault(x => x.NoteGuid == guid) ?? throw new KeyNotFoundException($"Guidが\"{guid}\"のノートは見つかりませんでした。");
         }
     }
 }
