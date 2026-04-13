@@ -5,7 +5,7 @@
 ## リファレンス
 
 - README: （準備中）
-- UOCフォーマット仕様: https://gist.github.com/teaaa0406/188f4ec0639fde9834d7cb7ef057bf2c
+- UOCフォーマット仕様: https://gist.github.com/Suiraaaa/188f4ec0639fde9834d7cb7ef057bf2c
 
 ---
 
