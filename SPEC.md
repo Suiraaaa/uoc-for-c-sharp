@@ -559,7 +559,9 @@ public Tpb(int value)
 ### Position
 
 - 概要：譜面の位置情報を保持するクラス
-- 利用方法：`new` で生成
+- 利用方法：
+  - `new` で生成
+  - `CreateFromQuarterNotesCount` メソッドで生成
 - 実装：`IEquatable<Position>`, `IComparable<Position>`
 
 #### プロパティ
@@ -591,6 +593,18 @@ public Position(MeasureIndex measureIndex, int sectionCount, int activeIndex)
   - `activeIndex` が `sectionCount` 以上の場合、`ArgumentOutOfRangeException` を送出する
 
 #### メソッド
+
+##### CreateFromQuarterNotesCount（Static）
+
+```csharp
+public static Position CreateFromQuarterNotesCount(float quarterNoteCount, MeasureLengthProvider measureLengthProvider)
+```
+- 役割：譜面位置までの四分音符の数から `Position` を作成する
+- 引数：
+  - `quarterNoteCount`：譜面位置までの四分音符の数
+  - `measureLengthProvider`：小節長プロバイダ
+- 戻り値：
+  - `Distance`：作成された `Distance` インスタンス
 
 ##### IsMeasureStart
 

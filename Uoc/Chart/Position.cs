@@ -67,6 +67,39 @@ namespace Uoc.Chart
         /// </summary>
         public int ActiveIndex => activeIndex;
 
+
+        /// <summary>
+        /// 譜面位置までの四分音符の数からPositionを作成します。
+        /// </summary>
+        /// <param name="quarterNoteCount">譜面位置までの四分音符の数</param>
+        /// <param name="measureLengthProvider">小節長プロバイダ</param>
+        /// <returns>Positionインスタンス</returns>
+        public static Position CreateFromQuarterNotesCount(float quarterNoteCount, MeasureLengthProvider measureLengthProvider)
+        {
+            var remainingQuarterNotesCount = quarterNoteCount;
+            var measureIndex = 0;
+
+            // どの小節に属するかを判定
+            while (remainingQuarterNotesCount >= measureLengthProvider.GetMeasureLengthAt(measureIndex).GetQuarterNoteCount())
+            {
+                remainingQuarterNotesCount -= measureLengthProvider.GetMeasureLengthAt(measureIndex).GetQuarterNoteCount();
+                measureIndex++;
+            }
+
+            var numerator = remainingQuarterNotesCount / measureLengthProvider.GetMeasureLengthAt(measureIndex).GetQuarterNoteCount();
+            var denominator = 1;
+
+            // FIXME: 浮動小数点の丸め誤差により無限ループに陥る可能性がある
+            // 小数がなくなるまで10倍する（Positionのコンストラクタ内で約分されます）
+            while (numerator % 1 != 0)
+            {
+                numerator *= 10;
+                denominator *= 10;
+            }
+            return new Position(new MeasureIndex(measureIndex), denominator, (int)numerator);
+
+        }
+
         /// <summary>
         /// 位置が小節の始点である場合にtrueを返します。
         /// </summary>
@@ -130,8 +163,8 @@ namespace Uoc.Chart
         /// <returns>再計算されたPosition</returns>
         public Position RecalculatePosition(MeasureLengthProvider oldMeasureLengthProvider, MeasureLengthProvider newMeasureLengthProvider)
         {
-            var totalBeatsCount = GetTotalQuarterNoteCount(oldMeasureLengthProvider);
-            return CreateFromQuarterNotesCount(totalBeatsCount, newMeasureLengthProvider);
+            var totalQuarterNoteCount = GetTotalQuarterNoteCount(oldMeasureLengthProvider);
+            return CreateFromQuarterNotesCount(totalQuarterNoteCount, newMeasureLengthProvider);
         }
 
         /// <summary>
@@ -141,46 +174,15 @@ namespace Uoc.Chart
         /// <returns>譜面位置までの四分音符の数</returns>
         public float GetTotalQuarterNoteCount(MeasureLengthProvider measureLengthProvider)
         {
-            var totalBeatsCount = 0f;
+            var totalQuarterNoteCount = 0f;
             for (int i = 0; i < measureIndex.Value; i++)
             {
-                totalBeatsCount += measureLengthProvider.GetMeasureLengthAt(i).GetQuarterNoteCount();
+                totalQuarterNoteCount += measureLengthProvider.GetMeasureLengthAt(i).GetQuarterNoteCount();
             }
-            totalBeatsCount += Position01 * measureLengthProvider.GetMeasureLengthAt(measureIndex.Value).GetQuarterNoteCount();
-            return totalBeatsCount;
+            totalQuarterNoteCount += Position01 * measureLengthProvider.GetMeasureLengthAt(measureIndex.Value).GetQuarterNoteCount();
+            return totalQuarterNoteCount;
         }
 
-        /// <summary>
-        /// 譜面位置までの四分音符の数からPositionを作成します。
-        /// </summary>
-        /// <param name="beatsCount">譜面位置までの四分音符の数</param>
-        /// <param name="measureLengthProvider">小節長プロバイダ</param>
-        /// <returns>Positionインスタンス</returns>
-        private static Position CreateFromQuarterNotesCount(float beatsCount, MeasureLengthProvider measureLengthProvider)
-        {
-            var remainingQuarterNotesCount = beatsCount;
-            var measureIndex = 0;
-
-            // どの小節に属するかを判定
-            while (remainingQuarterNotesCount >= measureLengthProvider.GetMeasureLengthAt(measureIndex).GetQuarterNoteCount())
-            {
-                remainingQuarterNotesCount -= measureLengthProvider.GetMeasureLengthAt(measureIndex).GetQuarterNoteCount();
-                measureIndex++;
-            }
-
-            var numerator = remainingQuarterNotesCount / measureLengthProvider.GetMeasureLengthAt(measureIndex).GetQuarterNoteCount();
-            var denominator = 1;
-
-            // FIXME: 浮動小数点の丸め誤差により無限ループに陥る可能性がある
-            // 小数がなくなるまで10倍する（Positionのコンストラクタ内で約分されます）
-            while (numerator % 1 != 0)
-            {
-                numerator *= 10;
-                denominator *= 10;
-            }
-            return new Position(new MeasureIndex(measureIndex), denominator, (int)numerator);
-
-        }
 
         private static int GCD(int a, int b)
         {
