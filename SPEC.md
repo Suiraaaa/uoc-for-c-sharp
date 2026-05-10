@@ -1522,6 +1522,28 @@ public Channel GetAvailableChannel(Position startPosition, Position endPosition,
 - 戻り値：
   - `Channel`：指定された範囲内で利用可能なチャンネル
 
+##### GetAvailableChannelAndAddReservation
+
+```csharp
+public Channel GetAvailableChannelAndAddReservation(Position startPosition, Position endPosition, Layer layer)
+```
+- 役割：指定された範囲内で利用可能なチャンネルを取得し、指定された範囲のチャンネルを予約します。クラスが状態を持つようになるため、取り扱いには注意してください。
+- 引数：
+  - `startPosition`：範囲始点
+  - `endPosition`：範囲終点
+  - `layer`：対象レイヤー
+- 戻り値：
+  - `Channel`：指定された範囲内で利用可能なチャンネル
+
+##### ClearAddedReservations
+
+```csharp
+public void ClearAddedReservations()
+```
+- 役割：`GetAvailableChannelAndAddReservation` メソッドにより追加されたすべての予約を削除します。
+- 引数：なし
+- 戻り値： なし
+
 ---
 
 ## 2.4.2.1 Uoc.Chart.Notes.Definition

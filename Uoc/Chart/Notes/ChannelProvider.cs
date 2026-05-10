@@ -12,69 +12,116 @@ namespace Uoc.Chart.Notes
     {
         private readonly NoteGroupDefCollection noteGroupDefCollection;
         private readonly NoteProfileCollection noteProfileCollection;
+        private readonly List<ChannelReservation> addedReservations;
 
         public ChannelProvider(NoteGroupDefCollection noteGroupDefCollection, NoteProfileCollection noteProfileCollection)
         {
             this.noteGroupDefCollection = noteGroupDefCollection ?? throw new ArgumentNullException(nameof(noteGroupDefCollection));
             this.noteProfileCollection = noteProfileCollection ?? throw new ArgumentNullException(nameof(noteProfileCollection));
+            addedReservations = new();
         }
 
         public Channel GetAvailableChannel(Position startPosition, Position endPosition, Layer layer)
         {
-            var channelReservations = GetChannelReservations(layer);
-            var reservatedReservations = channelReservations.Where(x => x.IsReserved(startPosition, endPosition)).ToList();
-            var channel = reservatedReservations.Count != 0 ? reservatedReservations.Max(x => x.Channel.Value) + 1 : 0;
-            return new Channel(channel);
+            var reservedReservations = GetChannelReservations(layer)
+                .Concat(addedReservations.Where(x => x.Layer == layer))
+                .Where(x => x.IsReserved(startPosition, endPosition));
+
+            return GetMinAvailableChannel(reservedReservations);
+        }
+
+        public Channel GetAvailableChannelAndAddReservation(Position startPosition, Position endPosition, Layer layer)
+        {
+            var reservedReservations = GetChannelReservations(layer)
+                .Concat(addedReservations.Where(x => x.Layer == layer))
+                .Where(x => x.IsReserved(startPosition, endPosition));
+
+            var channel = GetMinAvailableChannel(reservedReservations);
+
+            addedReservations.Add(new ChannelReservation(startPosition, endPosition, layer, channel));
+
+            return channel;
+        }
+
+        public void ClearAddedReservations()
+        {
+            addedReservations.Clear();
         }
 
         private IReadOnlyList<ChannelReservation> GetChannelReservations(Layer layer)
         {
-            var channelReservations = new List<ChannelReservation>();
+            var reservations = new List<ChannelReservation>();
             var notes = noteProfileCollection.NoteProfiles;
-            for (int i = 0; i < notes.Count; i++)
+            for (var i = 0; i < notes.Count; i++)
             {
-                if (notes[i].Layer != layer) continue;
-
-                // ノートが始点として所属するノートグループを探索
                 var startNote = notes[i];
+
+                if (startNote.Layer != layer) continue;
+                if (startNote.Channel.IsEmpty) continue;
+
                 var noteGroupDef = noteGroupDefCollection.GetNoteGroupDefByStartNoteId(startNote.NoteDef.NoteId);
                 if (noteGroupDef == null) continue;
 
-                // 終点ノートを探索
-                var endNote = (NoteProfile?)null;
-                for (int j = i + 1; j < notes.Count; j++)
+                var endNote = FindEndNote(notes, i + 1, layer, startNote.Channel, noteGroupDef.EndNoteId);
+                if (endNote == null)
                 {
-                    if (notes[j].Layer != layer) continue;
-                    if (notes[j].Channel == Channel.Empty || notes[j].Channel != startNote.Channel) continue;
-                    if (notes[j].NoteDef.NoteId != noteGroupDef.EndNoteId) continue;
-                    endNote = notes[j];
+                    throw new InvalidOperationException("グループの終点ノートが見つかりませんでした。");
                 }
-                if (endNote == null) throw new Exception("グループの終点ノートが見つかりませんでした。");
 
-                // 予約を追加
-                channelReservations.Add(new ChannelReservation(startNote.Position, endNote.Position, startNote.Channel));
+                reservations.Add(new ChannelReservation(startNote.Position, endNote.Position, layer, startNote.Channel));
             }
-            return channelReservations;
+            return reservations;
+        }
+
+        private static Channel GetMinAvailableChannel(IEnumerable<ChannelReservation> reservations)
+        {
+            var usedChannels = reservations.Select(x => x.Channel.Value).ToHashSet();
+            var channel = 0;
+            while (usedChannels.Contains(channel))
+            {
+                channel++;
+            }
+            return new Channel(channel);
+        }
+
+        private static NoteProfile? FindEndNote(IReadOnlyList<NoteProfile> notes, int startIndex, Layer layer, Channel channel, NoteId endNoteId)
+        {
+            for (var index = startIndex; index < notes.Count; index++)
+            {
+                var candidate = notes[index];
+
+                if (candidate.Layer != layer) continue;
+                if (candidate.Channel.IsEmpty) continue;
+                if (candidate.Channel != channel) continue;
+                if (candidate.NoteDef.NoteId != endNoteId) continue;
+
+                return candidate;
+            }
+            return null;
         }
 
         private readonly struct ChannelReservation
         {
             private readonly Position start;
             private readonly Position end;
+            private readonly Layer layer;
             private readonly Channel channel;
 
-            public ChannelReservation(Position start, Position end, Channel channel)
+            public ChannelReservation(Position start, Position end, Layer layer, Channel channel)
             {
                 this.start = start;
                 this.end = end;
+                this.layer = layer;
                 this.channel = channel;
             }
+
+            public Layer Layer => layer;
 
             public Channel Channel => channel;
 
             public bool IsReserved(Position startPosition, Position endPosition)
             {
-                return start <= startPosition && startPosition <= end || start <= endPosition && endPosition <= end;
+                return start <= endPosition && startPosition <= end;
             }
         }
     }
