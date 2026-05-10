@@ -1702,14 +1702,25 @@ public NoteGroupDefCollection(IReadOnlyList<NoteGroupDef> noteGroupDefs)
 
 #### メソッド
 
-##### GetNoteGroupById
+##### GetNoteGroupDefById
 
 ```csharp
-public NoteGroupDef GetNoteGroupById(NoteGroupId noteGroupId)
+public NoteGroupDef GetNoteGroupDefById(NoteGroupId noteGroupId)
 ```
 - 役割：ノートグループIDからノートグループ定義を取得する
 - 引数：
   - `noteGroupId`：ノートグループID
+- 戻り値：
+  - `NoteGroupDef`：指定されたノートグループIDを持つ `NoteGroupDef` インスタンス
+
+##### GetNoteGroupDefById
+
+```csharp
+public NoteGroupDef GetNoteGroupDefById(string noteGroupId)
+```
+- 役割：ノートグループID文字列からノートグループ定義を取得する
+- 引数：
+  - `noteGroupId`：ノートグループID文字列
 - 戻り値：
   - `NoteGroupDef`：指定されたノートグループIDを持つ `NoteGroupDef` インスタンス
 

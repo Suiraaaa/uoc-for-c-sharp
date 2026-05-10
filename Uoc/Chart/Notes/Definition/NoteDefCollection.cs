@@ -44,9 +44,7 @@ namespace Uoc.Chart.Notes.Definition
         /// <returns>指定されたノートIDを持つノート定義</returns>
         public NoteDef GetNoteDefById(NoteId noteId)
         {
-            if (noteId == null) throw new ArgumentNullException(nameof(noteId));
-            var noteDef = noteDefs.FirstOrDefault(x => x.NoteId == noteId);
-            return noteDef ?? throw new KeyNotFoundException($"存在しないノート定義にアクセスしました。(NoteId: {noteId.Value})");
+            return GetNoteDefById(noteId.Value);
         }
 
         /// <summary>
@@ -56,7 +54,9 @@ namespace Uoc.Chart.Notes.Definition
         /// <returns>指定されたノートIDを持つノート定義</returns>
         public NoteDef GetNoteDefById(string noteId)
         {
-            return GetNoteDefById(new NoteId(noteId));
+            if (noteId == null) throw new ArgumentNullException(nameof(noteId));
+            var noteDef = noteDefs.FirstOrDefault(x => x.NoteId.Value == noteId);
+            return noteDef ?? throw new KeyNotFoundException($"存在しないノート定義にアクセスしました。(NoteId: {noteId})");
         }
 
         /// <summary>
