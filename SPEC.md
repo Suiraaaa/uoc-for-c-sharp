@@ -1779,6 +1779,17 @@ public bool BelongsToAnyGroup(string noteId)
 - 戻り値：
   - `bool`：グループに所属している場合は `true`
 
+##### IsStartNoteInAnyGroup
+
+```csharp
+public bool IsStartNoteInAnyGroup(string noteId)
+```
+- 役割：指定されたノートIDがいずれかのグループの始点であるかを返す
+- 引数：
+  - `noteId`：ノートID
+- 戻り値：
+  - `bool`：いずれかのグループの始点である場合は `true`
+
 ---
 
 ### NoteDefIndex

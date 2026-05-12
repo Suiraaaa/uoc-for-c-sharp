@@ -47,7 +47,7 @@ namespace Uoc.Chart.Notes.Definition
         /// <returns>始点ノートが指定されたノートIDを持つノートグループ定義</returns>
         public NoteGroupDef GetNoteGroupDefByStartNoteId(NoteId startNoteId)
         {
-            return noteGroupDefs.FirstOrDefault(x => x.StartNoteId == startNoteId) ?? throw new KeyNotFoundException("始点ノートのIDが{\"startNoteId\"}のノートグループ定義が見つかりませんでした。");
+            return noteGroupDefs.FirstOrDefault(x => x.StartNoteId == startNoteId) ?? throw new KeyNotFoundException($"始点ノートのIDが\"{startNoteId.Value}\"のノートグループ定義が見つかりませんでした。");
         }
 
         /// <summary>
@@ -78,6 +78,16 @@ namespace Uoc.Chart.Notes.Definition
                 }
             }
             return false;
+        }
+
+        /// <summary>
+        ///  指定されたノートIDがいずれかのグループの始点であるかを返します。
+        /// </summary>
+        /// <param name="noteId">検索対象ノートID</param>
+        /// <returns>検証結果</returns>
+        public bool IsStartNoteInAnyGroup(string noteId)
+        {
+            return noteGroupDefs.Select(x => x.StartNoteId.Value).Contains(noteId);
         }
     }
 }

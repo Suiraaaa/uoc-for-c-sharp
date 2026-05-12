@@ -58,6 +58,7 @@ namespace Uoc.Chart.Notes
 
                 if (startNote.Layer != layer) continue;
                 if (startNote.Channel.IsEmpty) continue;
+                if (!noteGroupDefCollection.IsStartNoteInAnyGroup(startNote.NoteDef.NoteId.Value)) continue;
 
                 var noteGroupDef = noteGroupDefCollection.GetNoteGroupDefByStartNoteId(startNote.NoteDef.NoteId);
                 if (noteGroupDef == null) continue;
