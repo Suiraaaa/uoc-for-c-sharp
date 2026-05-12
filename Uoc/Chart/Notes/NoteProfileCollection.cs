@@ -161,6 +161,24 @@ namespace Uoc.Chart.Notes
             return new NoteProfileCollection(editingNoteProfiles);
         }
 
+        /// <summary>
+        /// 小節長に変更があった際に、絶対的な位置が変動しないようノーツの位置を再計算します。
+        /// </summary>
+        /// <param name="oldMeasureLengthProvider">変更前の小節長プロバイダ</param>
+        /// <param name="newMeasureLengthProvider">変更後の小節長プロバイダ</param>
+        /// <returns>再計算されたPosition</returns>
+        public NoteProfileCollection RecalculateNotePositions(MeasureLengthProvider oldMeasureLengthProvider, MeasureLengthProvider newMeasureLengthProvider)
+        {
+            var currentNoteProfiles = new List<NoteProfile>(noteProfiles);
+            var recalculateNotes = new List<NoteProfile>();
+            foreach (var note in currentNoteProfiles)
+            {
+                var recalculatePosition = note.Position.RecalculatePosition(oldMeasureLengthProvider, newMeasureLengthProvider);
+                recalculateNotes.Add(note.UpdatePosition(recalculatePosition));
+            }
+            return new NoteProfileCollection(recalculateNotes);
+        }
+
         public MeasureIndex GetMaxMeasureIndex()
         {
             int max = noteProfiles.Max(x => x.Position.MeasureIndex.Value);

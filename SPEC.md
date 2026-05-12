@@ -1238,6 +1238,18 @@ public NoteProfileCollection Remove(IReadOnlyList<NoteGuid> guids)
 - 戻り値：
   - `NoteProfileCollection`：ノートが削除された新しい `NoteProfileCollection` インスタンス
 
+##### RecalculateNotePositions
+
+```csharp
+public NoteProfileCollection RecalculateNotePositions(MeasureLengthProvider oldMeasureLengthProvider, MeasureLengthProvider newMeasureLengthProvider)
+```
+- 役割：小節長に変更があった場合に、絶対的な位置が変動しないようノーツの位置を再計算する
+- 引数：
+  - `oldMeasureLengthProvider`：変更前の小節長プロバイダ
+  - `newMeasureLengthProvider`：変更後の小節長プロバイダ
+- 戻り値：
+  - `NoteProfileCollection`：ノーツ位置が再計算された新しい `NoteProfileCollection` インスタンス
+
 ##### GetMaxMeasureIndex
 
 ```csharp
