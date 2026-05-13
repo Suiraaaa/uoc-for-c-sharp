@@ -63,6 +63,11 @@ namespace Uoc.Chart.Notes
 
         public IReadOnlyList<NoteGroupProfile> NoteGroupProfiles => noteGroupProfiles;
 
+        public NoteGroupProfile GetNoteGroupProfileByGuid(Guid guid)
+        {
+            return noteGroupProfiles.FirstOrDefault(x => x.Guid == guid) ?? throw new KeyNotFoundException($"Guidが\"{guid}\"のノートグループは見つかりませんでした。");
+        }
+
         /// <summary>
         /// 指定されたノートが所属しているグループの取得を試みます。
         /// </summary>

@@ -1361,6 +1361,19 @@ public NoteGroupProfile(NoteGroupDef noteGroupDef, IReadOnlyList<NoteProfile> be
 
 #### メソッド
 
+##### GetNoteGroupProfileByGuid
+
+```csharp
+public NoteGroupProfile GetNoteGroupProfileByGuid(Guid guid)
+```
+- 役割：指定された `Guid` を持つ `NoteGroupProfile` を探索して返します
+- 引数：
+  - `guid`：探索するノートGUID
+- 戻り値：
+  - `NoteGroupProfile`：指定された `Guid` を持つ `NoteGroupProfile` インスタンス
+- 例外/注意：
+  - 対象ノートが見つからなかった場合、`KeyNotFoundException` を送出する
+
 ##### TryGetNoteBelongingGroup
 
 ```csharp
