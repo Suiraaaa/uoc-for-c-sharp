@@ -24,6 +24,7 @@
     - [2.3.1 Uoc.Analyze.Playback](#231-uocanalyzeplayback)
       - [ChartPlaybackData](#chartplaybackdata)
       - [NotePlaybackProvider](#noteplaybackprovider)
+      - [NotePlaybackProviderCollection](#noteplaybackprovidercollection)
       - [NoteGroupPlaybackProvider](#notegroupplaybackprovider)
     - [2.3.2 Uoc.Analyze.Speed](#232-uocanalyzespeed)
       - [BasicSpeed](#basicspeed)
@@ -52,7 +53,6 @@
       - [NoteGroupProfileCollection](#notegroupprofilecollection)
       - [NoteId](#noteid)
       - [NoteGroupId](#notegroupid)
-      - [NoteGuid](#noteguid)
       - [Channel](#channel)
       - [ChannelProvider](#channelprovider)
       - [2.4.2.1 Uoc.Chart.Notes.Definition](#2421-uocchartnotesdefinition)
@@ -311,7 +311,7 @@ public IReadOnlyList<NoteGroupPlaybackProvider> GetNoteGroupPlaybackProviders()
 | `NoteProperties`    | `PropertyGroup` | get      | ノートが持つプロパティ |
 | `InstantiateTiming` | `long`          | get      | ノートの生成タイミング |
 | `EnabledTiming`     | `long`          | get      | ノートの有効タイミング |
-| `NoteGuid`          | `NoteGuid`      | get      | ノートのGUID           |
+| `Guid`              | `Guid`          | get      | ノートのGUID           |
 
 #### コンストラクタ
 
@@ -1063,14 +1063,14 @@ public IReadOnlyList<SpeedMultiplierChangeEvent> GetSpeedMultiplierChangeEventsA
 | `PropertyGroup` | `PropertyGroup` | get      | プロパティ値 |
 | `Layer`         | `Layer`         | get      | レイヤー     |
 | `Channel`       | `Channel`       | get      | チャンネル   |
-| `NoteGuid`      | `NoteGuid`      | get      | ノートのGUID |
+| `Guid`          | `Guid`          | get      | ノートのGUID |
 
 #### コンストラクタ
 
 ##### NoteProfile
 
 ```csharp
-public NoteProfile(NoteDef noteDef, Position position, IReadOnlyList<string> propertyValues, Layer layer, Channel channel, NoteGuid guid)
+public NoteProfile(NoteDef noteDef, Position position, IReadOnlyList<string> propertyValues, Layer layer, Channel channel, Guid guid)
 ```
 - 役割：ノートの構成からインスタンスを生成する
 - 引数：
@@ -1097,7 +1097,7 @@ public NoteProfile(NoteDef noteDef, Position position, IReadOnlyList<string> pro
   - `channel`：チャンネル
 - 例外/注意：
   - いずれかの引数が `null` の場合、`ArgumentNullException` を送出する
-  - ランダムな `NoteGuid` が新規に生成される
+  - ランダムな `Guid` が新規に生成される
 
 #### メソッド
 
@@ -1184,13 +1184,13 @@ public NoteGroupProfileCollection CreateNoteGroupProfileCollection(NoteGroupDefC
 ##### GetNoteProfileByGuid
 
 ```csharp
-public NoteProfile GetNoteProfileByGuid(NoteGuid guid)
+public NoteProfile GetNoteProfileByGuid(Guid guid)
 ```
-- 役割：指定された `NoteGuid` を持つ `NoteProfile` を探索して返します
+- 役割：指定された `Guid` を持つ `NoteProfile` を探索して返します
 - 引数：
   - `guid`：探索するノートGUID
 - 戻り値：
-  - `NoteProfile`：指定された `NoteGuid` を持つ `NoteProfile` インスタンス
+  - `NoteProfile`：指定された `Guid` を持つ `NoteProfile` インスタンス
 - 例外/注意：
   - 対象ノートが見つからなかった場合、`KeyNotFoundException` を送出する
 
@@ -1219,7 +1219,7 @@ public NoteProfileCollection PutOrReplace(IReadOnlyList<NoteProfile> putNoteProf
 ##### Remove
 
 ```csharp
-public NoteProfileCollection Remove(NoteGuid guid)
+public NoteProfileCollection Remove(Guid guid)
 ```
 - 役割：指定されたGUIDを持つノートを削除する
 - 引数：
@@ -1230,7 +1230,7 @@ public NoteProfileCollection Remove(NoteGuid guid)
 ##### Remove
 
 ```csharp
-public NoteProfileCollection Remove(IReadOnlyList<NoteGuid> guids)
+public NoteProfileCollection Remove(IReadOnlyList<Guid> guids)
 ```
 - 役割：指定されたGUIDを持つノートを削除する
 - 引数：
@@ -1319,20 +1319,23 @@ public SpeedMultiplierProvider CreateSpeedMultiplierProvider(MeasureLengthProvid
 | -------------- | ---------------------------- | -------- | ------------------------ |
 | `NoteGroupDef` | `NoteGroupDef`               | get      | ノートグループ定義       |
 | `BelongsNotes` | `IReadOnlyList<NoteProfile>` | get      | グループに所属するノーツ |
+| `Guid`         | `Guid`                       | get      | ノートグループのGuid     |
 
 #### コンストラクタ
 
 ##### NoteGroupProfile
 
 ```csharp
-public NoteGroupProfile(NoteGroupDef noteGroupDef, IReadOnlyList<NoteProfile> belongsNotes)
+public NoteGroupProfile(NoteGroupDef noteGroupDef, IReadOnlyList<NoteProfile> belongsNotes, Guid guid)
 ```
 - 役割：ノートグループを構成する情報からインスタンスを生成する
 - 引数：
   - `noteGroupDef`：ノートグループ定義
   - `belongsNotes`：グループに所属するノーツ
+  - `guid`ノートグループのGuid
 - 例外/注意：
   - いずれかの引数が `null` の場合、`ArgumentNullException` を送出する
+  - ランダムな `Guid` が新規に生成される
 
 #### メソッド
 
@@ -1434,34 +1437,7 @@ public NoteGroupId(string value)
 
 ---
 
-### NoteGuid
 
-- 概要：ノートのGUIDを保持するクラス（値オブジェクト）
-- 利用方法：`new` で生成
-- 実装：`IEquatable<NoteGuid>`
-
-#### プロパティ
-
-| 名前    | 型     | アクセス | 内容         |
-| ------- | ------ | -------- | ------------ |
-| `Value` | `Guid` | get      | ノートのGUID |
-
-#### コンストラクタ
-
-##### NoteGuid
-
-```csharp
-public NoteGuid(Guid guid)
-```
-- 役割：ノートのGUIDを保持するインスタンスを生成する
-- 引数：
-  - `guid`：ノートのGUID
-
-#### メソッド
-
-- なし
-
----
 
 ### Channel
 

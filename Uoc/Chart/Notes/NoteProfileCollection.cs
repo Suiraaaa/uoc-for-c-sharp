@@ -84,9 +84,9 @@ namespace Uoc.Chart.Notes
             return NoteGroupProfileCollection.Create(noteGroupDefCollection, this);
         }
 
-        public NoteProfile GetNoteProfileByGuid(NoteGuid guid)
+        public NoteProfile GetNoteProfileByGuid(Guid guid)
         {
-            return noteProfiles.FirstOrDefault(x => x.NoteGuid == guid) ?? throw new KeyNotFoundException($"Guidが\"{guid}\"のノートは見つかりませんでした。");
+            return noteProfiles.FirstOrDefault(x => x.Guid == guid) ?? throw new KeyNotFoundException($"Guidが\"{guid}\"のノートは見つかりませんでした。");
         }
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace Uoc.Chart.Notes
         public NoteProfileCollection PutOrReplace(NoteProfile putNoteProfile)
         {
             var editingNoteProfiles = new List<NoteProfile>(noteProfiles);
-            var sameGuidNoteIndex = editingNoteProfiles.FindIndex(x => x.NoteGuid == putNoteProfile.NoteGuid);
+            var sameGuidNoteIndex = editingNoteProfiles.FindIndex(x => x.Guid == putNoteProfile.Guid);
             if (sameGuidNoteIndex != -1)
             {
                 editingNoteProfiles[sameGuidNoteIndex] = putNoteProfile;
@@ -121,7 +121,7 @@ namespace Uoc.Chart.Notes
             var editingNoteProfiles = new List<NoteProfile>(noteProfiles);
             foreach (var putNoteProfile in putNoteProfiles)
             {
-                var sameGuidNoteIndex = editingNoteProfiles.FindIndex(x => x.NoteGuid == putNoteProfile.NoteGuid);
+                var sameGuidNoteIndex = editingNoteProfiles.FindIndex(x => x.Guid == putNoteProfile.Guid);
                 if (sameGuidNoteIndex != -1)
                 {
                     editingNoteProfiles[sameGuidNoteIndex] = putNoteProfile;
@@ -139,10 +139,10 @@ namespace Uoc.Chart.Notes
         /// </summary>
         /// <param name="guid">削除対象ノートのGUID</param>
         /// <returns>操作後のNoteProfileCollection</returns>
-        public NoteProfileCollection Remove(NoteGuid guid)
+        public NoteProfileCollection Remove(Guid guid)
         {
             var editingNoteProfiles = new List<NoteProfile>(noteProfiles);
-            editingNoteProfiles.RemoveAll(x => x.NoteGuid == guid);
+            editingNoteProfiles.RemoveAll(x => x.Guid == guid);
             return new NoteProfileCollection(editingNoteProfiles);
         }
 
@@ -151,12 +151,12 @@ namespace Uoc.Chart.Notes
         /// </summary>
         /// <param name="guids">削除対象ノートのGUIDリスト</param>
         /// <returns>操作後のNoteProfileCollection</returns>
-        public NoteProfileCollection Remove(IReadOnlyList<NoteGuid> guids)
+        public NoteProfileCollection Remove(IReadOnlyList<Guid> guids)
         {
             var editingNoteProfiles = new List<NoteProfile>(noteProfiles);
             foreach (var guid in guids)
             {
-                editingNoteProfiles.RemoveAll(x => x.NoteGuid == guid);
+                editingNoteProfiles.RemoveAll(x => x.Guid == guid);
             }
             return new NoteProfileCollection(editingNoteProfiles);
         }

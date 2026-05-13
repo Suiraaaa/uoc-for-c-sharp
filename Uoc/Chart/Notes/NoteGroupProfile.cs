@@ -11,20 +11,19 @@ namespace Uoc.Chart.Notes
     {
         private readonly NoteGroupDef noteGroupDef;
         private readonly IReadOnlyList<NoteProfile> belongsNotes;
-        private readonly NoteGuid guid;
+        private readonly Guid guid;
 
-        public NoteGroupProfile(NoteGroupDef noteGroupDef, IReadOnlyList<NoteProfile> belongsNotes, NoteGuid guid)
+        public NoteGroupProfile(NoteGroupDef noteGroupDef, IReadOnlyList<NoteProfile> belongsNotes, Guid guid)
         {
             this.noteGroupDef = noteGroupDef ?? throw new ArgumentNullException(nameof(noteGroupDef));
             this.belongsNotes = belongsNotes ?? throw new ArgumentNullException(nameof(belongsNotes));
-            this.guid = guid ?? throw new ArgumentNullException(nameof(guid));
         }
 
         public NoteGroupProfile(NoteGroupDef noteGroupDef, IReadOnlyList<NoteProfile> belongsNotes)
         {
             this.noteGroupDef = noteGroupDef ?? throw new ArgumentNullException(nameof(noteGroupDef));
             this.belongsNotes = belongsNotes ?? throw new ArgumentNullException(nameof(belongsNotes));
-            guid = new NoteGuid();
+            guid = new Guid();
         }
 
         /// <summary>
@@ -38,8 +37,8 @@ namespace Uoc.Chart.Notes
         public IReadOnlyList<NoteProfile> BelongsNotes => belongsNotes;
 
         /// <summary>
-        /// Guid
+        /// ノートグループのGuid
         /// </summary>
-        public NoteGuid Guid => guid;
+        public Guid Guid => guid;
     }
 }

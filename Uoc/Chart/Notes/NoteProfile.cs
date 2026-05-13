@@ -17,16 +17,15 @@ namespace Uoc.Chart.Notes
         private readonly PropertyGroup propertyGroup;
         private readonly Layer layer;
         private readonly Channel channel;
-        private readonly NoteGuid noteGuid;
+        private readonly Guid guid;
 
-        public NoteProfile(NoteDef noteDef, Position position, IReadOnlyList<string> propertyValues, Layer layer, Channel channel, NoteGuid noteGuid)
+        public NoteProfile(NoteDef noteDef, Position position, IReadOnlyList<string> propertyValues, Layer layer, Channel channel, Guid guid)
         {
             if (propertyValues == null) throw new ArgumentNullException(nameof(propertyValues));
             this.noteDef = noteDef ?? throw new ArgumentNullException(nameof(noteDef));
             this.position = position ?? throw new ArgumentNullException(nameof(position));
             this.layer = layer ?? throw new ArgumentNullException(nameof(layer));
             this.channel = channel ?? throw new ArgumentNullException(nameof(channel));
-            this.noteGuid = noteGuid ?? throw new ArgumentNullException(nameof(noteGuid));
             propertyGroup = PropertyGroup.MergeKeysAndValues(noteDef.PropertyNames, propertyValues);
         }
 
@@ -38,7 +37,7 @@ namespace Uoc.Chart.Notes
             this.layer = layer ?? throw new ArgumentNullException(nameof(layer));
             this.channel = channel ?? throw new ArgumentNullException(nameof(channel));
             propertyGroup = PropertyGroup.MergeKeysAndValues(noteDef.PropertyNames, propertyValues);
-            noteGuid = new NoteGuid();
+            guid = new Guid();
         }
 
         /// <summary>
@@ -69,7 +68,7 @@ namespace Uoc.Chart.Notes
         /// <summary>
         /// ノートのGuid
         /// </summary>
-        public NoteGuid NoteGuid => noteGuid;
+        public Guid Guid => guid;
 
         /// <summary>
         /// 譜面位置を更新します。
@@ -78,7 +77,7 @@ namespace Uoc.Chart.Notes
         /// <returns>譜面位置が更新されたNoteProfile</returns>
         public NoteProfile UpdatePosition(Position position)
         {
-            return new NoteProfile(noteDef, position, propertyGroup.GetPropertyValueList(), layer, channel, noteGuid);
+            return new NoteProfile(noteDef, position, propertyGroup.GetPropertyValueList(), layer, channel, guid);
         }
 
         /// <summary>
@@ -88,7 +87,7 @@ namespace Uoc.Chart.Notes
         /// <returns>プロパティグループが更新されたNoteProfile</returns>
         public NoteProfile UpdatePropertyGroup(PropertyGroup propertyGroup)
         {
-            return new NoteProfile(noteDef, position, propertyGroup.GetPropertyValueList(), layer, channel, noteGuid);
+            return new NoteProfile(noteDef, position, propertyGroup.GetPropertyValueList(), layer, channel, guid);
         }
 
         /// <summary>
@@ -98,7 +97,7 @@ namespace Uoc.Chart.Notes
         /// <returns>チャンネルが更新されたNoteProfile</returns>
         public NoteProfile UpdateChannel(Channel channel)
         {
-            return new NoteProfile(noteDef, position, propertyGroup.GetPropertyValueList(), layer, channel, noteGuid);
+            return new NoteProfile(noteDef, position, propertyGroup.GetPropertyValueList(), layer, channel, guid);
         }
 
         internal bool IsBpmChangeNote()

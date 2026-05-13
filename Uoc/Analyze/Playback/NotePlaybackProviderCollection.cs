@@ -26,9 +26,9 @@ namespace Uoc.Analyze.Playback
 
         public IReadOnlyList<NotePlaybackProvider> NotePlaybackProviders => notePlaybackProviders;
 
-        public NotePlaybackProvider GetNotePlaybackProviderByGuid(NoteGuid guid)
+        public NotePlaybackProvider GetNotePlaybackProviderByGuid(Guid guid)
         {
-            return notePlaybackProviders.FirstOrDefault(x => x.NoteGuid == guid) ?? throw new KeyNotFoundException($"Guidが\"{guid}\"のノートは見つかりませんでした。");
+            return notePlaybackProviders.FirstOrDefault(x => x.Guid == guid) ?? throw new KeyNotFoundException($"Guidが\"{guid}\"のノートは見つかりませんでした。");
         }
     }
 }
