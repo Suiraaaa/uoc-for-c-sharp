@@ -26,6 +26,7 @@ namespace Uoc.Chart.Notes
             this.position = position ?? throw new ArgumentNullException(nameof(position));
             this.layer = layer ?? throw new ArgumentNullException(nameof(layer));
             this.channel = channel ?? throw new ArgumentNullException(nameof(channel));
+            this.guid = guid;
             propertyGroup = PropertyGroup.MergeKeysAndValues(noteDef.PropertyNames, propertyValues);
         }
 
@@ -37,7 +38,7 @@ namespace Uoc.Chart.Notes
             this.layer = layer ?? throw new ArgumentNullException(nameof(layer));
             this.channel = channel ?? throw new ArgumentNullException(nameof(channel));
             propertyGroup = PropertyGroup.MergeKeysAndValues(noteDef.PropertyNames, propertyValues);
-            guid = new Guid();
+            guid = Guid.NewGuid();
         }
 
         /// <summary>

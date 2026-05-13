@@ -17,13 +17,14 @@ namespace Uoc.Chart.Notes
         {
             this.noteGroupDef = noteGroupDef ?? throw new ArgumentNullException(nameof(noteGroupDef));
             this.belongsNotes = belongsNotes ?? throw new ArgumentNullException(nameof(belongsNotes));
+            this.guid = guid;
         }
 
         public NoteGroupProfile(NoteGroupDef noteGroupDef, IReadOnlyList<NoteProfile> belongsNotes)
         {
             this.noteGroupDef = noteGroupDef ?? throw new ArgumentNullException(nameof(noteGroupDef));
             this.belongsNotes = belongsNotes ?? throw new ArgumentNullException(nameof(belongsNotes));
-            guid = new Guid();
+            guid = Guid.NewGuid();
         }
 
         /// <summary>
