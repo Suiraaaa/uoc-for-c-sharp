@@ -1059,6 +1059,7 @@ public IReadOnlyList<SpeedMultiplierChangeEvent> GetSpeedMultiplierChangeEventsA
 | 名前            | 型              | アクセス | 内容         |
 | --------------- | --------------- | -------- | ------------ |
 | `NoteDef`       | `NoteDef`       | get      | ノート定義   |
+| `NoteId`        | `NoteId`        | get      | ノートのID   |
 | `Position`      | `Position`      | get      | ノートの位置 |
 | `PropertyGroup` | `PropertyGroup` | get      | プロパティ値 |
 | `Layer`         | `Layer`         | get      | レイヤー     |
@@ -1318,6 +1319,7 @@ public SpeedMultiplierProvider CreateSpeedMultiplierProvider(MeasureLengthProvid
 | 名前           | 型                           | アクセス | 内容                     |
 | -------------- | ---------------------------- | -------- | ------------------------ |
 | `NoteGroupDef` | `NoteGroupDef`               | get      | ノートグループ定義       |
+| `NoteGroupId`  | `NoteGroupId`                | get      | ノートグループID         |
 | `BelongsNotes` | `IReadOnlyList<NoteProfile>` | get      | グループに所属するノーツ |
 | `Guid`         | `Guid`                       | get      | ノートグループのGuid     |
 

@@ -46,6 +46,11 @@ namespace Uoc.Chart.Notes
         public NoteDef NoteDef => noteDef;
 
         /// <summary>
+        /// ノートID
+        /// </summary>
+        public NoteId NoteId => noteDef.NoteId;
+
+        /// <summary>
         /// ノートの位置
         /// </summary>
         public Position Position => position;

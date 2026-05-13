@@ -32,6 +32,11 @@ namespace Uoc.Chart.Notes
         public NoteGroupDef NoteGroupDef => noteGroupDef;
 
         /// <summary>
+        /// ノートグループID
+        /// </summary>
+        public NoteGroupId NoteGroupId => noteGroupDef.NoteGroupId;
+
+        /// <summary>
         /// 所属するノーツ
         /// </summary>
         public IReadOnlyList<NoteProfile> BelongsNotes => belongsNotes;
