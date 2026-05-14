@@ -95,9 +95,9 @@ namespace Uoc.Chart.Notes
             return noteGroupProfileCollection;
         }
 
-        public NoteProfile GetNoteProfileByGuid(Guid guid)
+        public NoteProfile? GetNoteProfileByGuid(Guid guid)
         {
-            return noteProfiles.FirstOrDefault(x => x.Guid == guid) ?? throw new KeyNotFoundException($"Guidが\"{guid}\"のノートは見つかりませんでした。");
+            return noteProfiles.FirstOrDefault(x => x.Guid == guid);
         }
 
         /// <summary>

@@ -63,9 +63,9 @@ namespace Uoc.Chart.Notes
 
         public IReadOnlyList<NoteGroupProfile> NoteGroupProfiles => noteGroupProfiles;
 
-        public NoteGroupProfile GetNoteGroupProfileByGuid(Guid guid)
+        public NoteGroupProfile? GetNoteGroupProfileByGuid(Guid guid)
         {
-            return noteGroupProfiles.FirstOrDefault(x => x.Guid == guid) ?? throw new KeyNotFoundException($"Guidが\"{guid}\"のノートグループは見つかりませんでした。");
+            return noteGroupProfiles.FirstOrDefault(x => x.Guid == guid);
         }
 
         /// <summary>
