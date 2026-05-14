@@ -1176,11 +1176,12 @@ public static NoteProfileCollection CreateMinimum(MeasureLength measureLength, B
 ```csharp
 public NoteGroupProfileCollection CreateNoteGroupProfileCollection(NoteGroupDefCollection noteGroupDefCollection)
 ```
-- 役割：保持するノーツ情報から `NoteGroupProfileCollection` を作成する
+- 役割：保持するノーツ情報から `NoteGroupProfileCollection` を作成する 
+  - ただし一度作成された `NoteGroupProfileCollection` インスタンスはキャッシュされ、以後はそれを返却する
 - 引数：
   - `noteGroupDefCollection`：ノートグループ定義コレクション
 - 戻り値：
-  - `NoteGroupProfileCollection`：作成された `NoteGroupProfileCollection` インスタンス
+  - `NoteGroupProfileCollection`：作成もしくはキャッシュされた `NoteGroupProfileCollection` インスタンス
 
 ##### GetNoteProfileByGuid
 

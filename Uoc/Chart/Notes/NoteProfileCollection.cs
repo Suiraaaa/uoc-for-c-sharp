@@ -15,10 +15,7 @@ namespace Uoc.Chart.Notes
     {
         private readonly IReadOnlyList<NoteProfile> noteProfiles;
 
-        public NoteProfileCollection()
-        {
-            noteProfiles = new List<NoteProfile>();
-        }
+        private NoteGroupProfileCollection? noteGroupProfileCollection;
 
         internal NoteProfileCollection(IReadOnlyList<NoteProfile> noteProfiles)
         {
@@ -79,9 +76,23 @@ namespace Uoc.Chart.Notes
         /// </summary>
         public IReadOnlyList<NoteProfile> NoteProfiles => noteProfiles;
 
+        /// <summary>
+        /// 保持するノーツ情報からNoteGroupProfileCollectionを作成します。
+        /// </summary>
+        /// <remarks>
+        /// 一度作成されたNoteGroupProfileCollectionはキャッシュされ、以降は同一のインスタンスを返します。
+        /// NoteGroupProfileCollectionは作成するたびに保持するGuidが変わるため、
+        /// 常に同一のGuidを持つインスタンスを返すことを目的としています。
+        /// </remarks>
+        /// <param name="noteGroupDefCollection">ノート定義コレクション</param>
+        /// <returns>作成もしくはキャッシュされたNoteGroupProfileCollection</returns>
         public NoteGroupProfileCollection CreateNoteGroupProfileCollection(NoteGroupDefCollection noteGroupDefCollection)
         {
-            return NoteGroupProfileCollection.Create(noteGroupDefCollection, this);
+            if (noteGroupProfileCollection is null)
+            {
+                noteGroupProfileCollection = NoteGroupProfileCollection.Create(noteGroupDefCollection, this);
+            }
+            return noteGroupProfileCollection;
         }
 
         public NoteProfile GetNoteProfileByGuid(Guid guid)
