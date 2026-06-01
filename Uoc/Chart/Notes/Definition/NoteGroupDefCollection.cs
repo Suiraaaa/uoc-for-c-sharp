@@ -57,27 +57,35 @@ namespace Uoc.Chart.Notes.Definition
         /// <returns>検証結果</returns>
         public bool BelongsToAnyGroup(NoteId noteId)
         {
-            return BelongsToAnyGroup(noteId.Value);
-        }
-
-        /// <summary>
-        /// 指定されたノートIDがいずれかのグループに所属しているかどうかを返します。
-        /// </summary>
-        /// <param name="noteId">検索対象ノートID</param>
-        /// <returns>検証結果</returns>
-        public bool BelongsToAnyGroup(string noteId)
-        {
             foreach (var noteGroupDef in noteGroupDefs)
             {
                 foreach (var noteIdInNoteGroup in noteGroupDef.BelongsNoteIds)
                 {
-                    if (noteIdInNoteGroup.Value == noteId)
+                    if (noteIdInNoteGroup.Value == noteId.Value)
                     {
                         return true;
                     }
                 }
             }
             return false;
+        }
+
+        /// <summary>
+        /// 指定されたノートIDを持つノートが所属するノートグループを探索します。
+        /// 見つからなかった場合は null を返します。
+        /// </summary>
+        /// <param name="noteId">検索対象ノートID</param>
+        /// <returns>ノートが所属するノートグループ</returns>
+        public NoteGroupDef? FindBelongedNoteGroup(NoteId noteId)
+        {
+            foreach (var noteGroupDef in noteGroupDefs)
+            {
+                if (noteGroupDef.BelongsNoteIds.Contains(noteId))
+                {
+                    return noteGroupDef;
+                }
+            }
+            return null;
         }
 
         /// <summary>
