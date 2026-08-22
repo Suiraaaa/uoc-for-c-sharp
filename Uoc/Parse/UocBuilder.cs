@@ -99,7 +99,7 @@ namespace Uoc.Parse
             var noteProfiles = noteProfileCollection.NoteProfiles;
 
             // レイヤーごとに処理
-            for (int i = 0; i < Layer.MaxLayerValue; i++)
+            for (int i = Layer.MinLayerValue; i <= Layer.MaxLayerValue; i++)
             {
                 var notesInLayer = noteProfiles.Where(x => x.Layer.Value == i).OrderBy(x => x.Position.MeasureIndex.Value).ThenBy(x => x.Position.Position01).ToList();
                 if (notesInLayer.Count == 0) continue;
