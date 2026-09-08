@@ -49,8 +49,10 @@ namespace Uoc.Parse
             for (int i = 0; i < chartPropertyGroup.Count; i++)
             {
                 var property = chartPropertyGroup[i];
-                if (property.Key.Value == "GameID" || property.Key.Value == "TicksPerBeat" || property.Key.Value == "Title") continue;
-                stringBuilder.AppendLine($"# {property.Key.Value} : \"{property.Value.AsString()}\"");
+                var key = property.Key.Value;
+                var value = property.Value.HasValue() ? property.Value.AsString() : string.Empty;
+                if (key == "GameID" || key == "TicksPerBeat") continue;
+                stringBuilder.AppendLine($"# {key} : \"{value}\"");
             }
             stringBuilder.AppendLine();
 
