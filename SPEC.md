@@ -603,10 +603,12 @@ public static Position CreateFromQuarterNotesCount(float quarterNoteCount, Measu
 ```
 - 役割：譜面位置までの四分音符の数から `Position` を作成する
 - 引数：
-  - `quarterNoteCount`：譜面位置までの四分音符の数
+  - `quarterNoteCount`：譜面位置までの四分音符の数。有限の非負値を指定する
   - `measureLengthProvider`：小節長プロバイダ
 - 戻り値：
-  - `Distance`：作成された `Distance` インスタンス
+  - `Position`：作成された `Position` インスタンス
+- 例外/注意：
+  - `quarterNoteCount`が有限の非負値でない場合、または位置を`int`の範囲内の分数で表せない場合、`ArgumentOutOfRangeException`を送出する
 
 ##### IsMeasureStart
 
