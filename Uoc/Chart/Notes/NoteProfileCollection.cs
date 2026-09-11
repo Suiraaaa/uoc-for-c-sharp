@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Uoc.Analyze.Speed;
 using Uoc.Chart.Event;
@@ -38,14 +39,14 @@ namespace Uoc.Chart.Notes
                 new NoteProfile(
                     noteDef: NoteDef.BpmChange,
                     position: Position.ChartStart,
-                    propertyValues: new List<string>() { bpm.Value.ToString() },
+                    propertyValues: new List<string>() { bpm.Value.ToString(CultureInfo.InvariantCulture) },
                     layer: layer,
                     channel: Channel.Empty
                 ),
                 new NoteProfile(
                     noteDef: NoteDef.SpeedChange,
                     position: Position.ChartStart,
-                    propertyValues: new List<string>() { speedMultiplier.Multiplier.ToString() },
+                    propertyValues: new List<string>() { speedMultiplier.Multiplier.ToString(CultureInfo.InvariantCulture) },
                     layer: layer,
                     channel: Channel.Empty
                 ),
