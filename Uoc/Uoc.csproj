@@ -5,7 +5,7 @@
     <RootNamespace>Uoc</RootNamespace>
     <Nullable>enable</Nullable>
 	<LangVersion>9.0</LangVersion>
-	<Version>0.1.0-alpha.2</Version>
+	<Version>0.1.0-alpha.3</Version>
   </PropertyGroup>
 
 </Project>
