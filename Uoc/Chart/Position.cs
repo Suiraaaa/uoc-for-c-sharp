@@ -212,10 +212,15 @@ namespace Uoc.Chart
         {
             if (other == null) throw new ArgumentNullException(nameof(other));
 
-            // FIXME: 比較する位置の小節長が異なる場合は正確な比較ができない
-            var scale = measureIndex.Value + Position01;
-            var otherScale = other.measureIndex.Value + other.Position01;
-            return scale.CompareTo(otherScale);
+            var measureComparison = measureIndex.Value.CompareTo(other.measureIndex.Value);
+            if (measureComparison != 0)
+            {
+                return measureComparison;
+            }
+
+            var scaledActiveIndex = (long)activeIndex * other.sectionCount;
+            var otherScaledActiveIndex = (long)other.activeIndex * sectionCount;
+            return scaledActiveIndex.CompareTo(otherScaledActiveIndex);
         }
 
         public override int GetHashCode()
