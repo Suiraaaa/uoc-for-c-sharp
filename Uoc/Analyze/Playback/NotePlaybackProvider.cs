@@ -187,7 +187,6 @@ namespace Uoc.Analyze.Playback
         {
             var measureStartTiming = CalculateMeasureStartTiming(measureIndex);
             var measureDuration = CalculateMeasureDurationUpToTick(measureIndex, tick);
-            Console.Write($"[{measureDuration}]");
             return (long)(measureStartTiming + measureDuration);
         }
 
