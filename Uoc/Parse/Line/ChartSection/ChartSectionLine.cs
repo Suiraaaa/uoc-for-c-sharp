@@ -12,7 +12,7 @@ namespace Uoc.Parse.Line.ChartSection
     /// </summary>
     internal class ChartSectionLine
     {
-        private static readonly Regex chartLineRegex = new(@"^\s*([A-Z0-9]{3})([A-Z0-9]{2})([A-Z0-9]{2})?\s*:\s*(\d+)(?:\s*,\s*(.*))*?$", RegexOptions.Compiled);
+        private static readonly Regex chartLineRegex = new(@"^\s*([A-Z0-9]{3})([A-Z0-9]{2})([A-Z0-9]{2})?\s*:\s*([01]+)(?:\s*,\s*(.*))*?$", RegexOptions.Compiled);
 
         private readonly IReadOnlyList<Position> positions;
         private readonly IReadOnlyList<string> propertyValues;

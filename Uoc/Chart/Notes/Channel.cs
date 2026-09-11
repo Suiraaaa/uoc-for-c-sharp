@@ -9,7 +9,7 @@ namespace Uoc.Chart.Notes
     public class Channel : IEquatable<Channel?>
     {
         private const int MIN_CHANNEL = 0;
-        private const int MAX_CHANNEL = 1224;
+        private const int MAX_CHANNEL = 1295;
 
         private readonly int? value;
 

@@ -4,8 +4,8 @@
 
 ## リファレンス
 
-- README: （準備中）
-- UOCフォーマット仕様: https://gist.github.com/Suiraaaa/188f4ec0639fde9834d7cb7ef057bf2c
+- [README](README.md)
+- [UOCフォーマット仕様](https://gist.github.com/Suiraaaa/188f4ec0639fde9834d7cb7ef057bf2c)
 
 ---
 
@@ -24,7 +24,6 @@
     - [2.3.1 Uoc.Analyze.Playback](#231-uocanalyzeplayback)
       - [ChartPlaybackData](#chartplaybackdata)
       - [NotePlaybackProvider](#noteplaybackprovider)
-      - [NotePlaybackProviderCollection](#noteplaybackprovidercollection)
       - [NoteGroupPlaybackProvider](#notegroupplaybackprovider)
     - [2.3.2 Uoc.Analyze.Speed](#232-uocanalyzespeed)
       - [BasicSpeed](#basicspeed)
@@ -67,27 +66,29 @@
       - [PropertyValue](#propertyvalue)
       - [PropertyGroup](#propertygroup)
       - [ChartPropertyGroup](#chartpropertygroup)
-- [3. 変更履歴](#3-変更履歴)
 
 ---
 
 ## 1. 全体像
 
 - **Uoc（ルート）**：UOCを扱うための基本オブジェクト
-- **Uoc.Parse**：UOC文字列のパース/構築
+- **Uoc.Parse**：UOC文字列のパースと構築
 - **Uoc.Analyze**：再生向け派生情報の解析
-- **Uoc.Chart**：譜面情報を表すドメインモデル（プロパティ/ノート/イベント等）
+- **Uoc.Chart**：譜面情報を表すドメインモデル（プロパティ、ノート、イベント等）
 
 ---
 
 ## 2. 公開API仕様
 
+本章では、各型がオーバーライドする `Equals(object)`、`GetHashCode()`、および等価演算子を省略する。
+実装するインタフェースと、ライブラリ固有の公開メンバを記載する。
+
 ## 2.1 Uoc
 
 ### UocObject
 
-- 概要：UOC文字列に含まれるすべての情報（譜面プロパティ/ノート定義/ノーツ情報等）を保持するクラス
-- 利用方法：`UocParser` 経由で取得（new は不可）
+- 概要：UOC文字列に含まれるすべての情報（譜面プロパティ、ノート定義、ノーツ情報等）を保持するクラス
+- 利用方法：`UocParser` 経由で取得（`new` は不可）
 
 #### プロパティ
 
@@ -120,7 +121,7 @@ public ChartPlaybackData CreateChartPlaybackData(AnalysisSetting analysisSetting
 
 ### UocString
 
-- 概要：UOC文字列を保持するクラス（値オブジェクト）
+- 概要：UOC文字列を保持するクラス
 - 利用方法：`new` で生成
 
 #### プロパティ
@@ -140,7 +141,7 @@ public UocString(string value)
 - 引数：
   - `value`：UOC文字列
 - 例外/注意：
-  - `value` が `null` / 空文字 / 空白のみの場合、`ArgumentException` を送出する
+  - `value` が `null`、空文字、空白のみの場合、`ArgumentException` を送出する
 
 #### メソッド
 
@@ -158,14 +159,14 @@ public UocString(string value)
 #### プロパティ
 
 - なし
-  
+
 #### コンストラクタ
 
 - なし
 
 #### メソッド
 
-##### Parse（Static）
+##### Parse（static）
 
 ```csharp
 public static UocObject Parse(UocString uocString)
@@ -175,6 +176,8 @@ public static UocObject Parse(UocString uocString)
   - `uocString`：UOC文字列
 - 戻り値：
   - `UocObject`：作成された `UocObject`
+- 例外/注意：
+  - `uocString` が `null` の場合、`ArgumentNullException` を送出する
 
 ---
 
@@ -193,7 +196,7 @@ public static UocObject Parse(UocString uocString)
 
 #### メソッド
 
-##### Build（Static）
+##### Build（static）
 
 ```csharp
 public static UocString Build(string editorName, ChartPropertyGroup chartPropertyGroup, NoteDefCollection noteDefCollection, NoteGroupDefCollection noteGroupDefCollection, NoteProfileCollection noteProfileCollection)
@@ -208,6 +211,10 @@ public static UocString Build(string editorName, ChartPropertyGroup chartPropert
   - `noteProfileCollection`：ノートプロファイルコレクション
 - 戻り値：
   - `UocString`：作成された `UocString`
+- 例外/注意：
+  - `editorName` が `null`、空文字、空白のみの場合、`ArgumentException` を送出する
+  - そのほかの引数が `null` の場合、`ArgumentNullException` を送出する
+  - ノートの小節番号が `46655` より大きい場合、`ArgumentOutOfRangeException` を送出する
 
 ---
 
@@ -225,8 +232,8 @@ public static UocString Build(string editorName, ChartPropertyGroup chartPropert
 | `BasicSpeed`                       | `BasicSpeed` | get      | ノートの基本移動速度                           |
 | `MinimumTiming`                    | `long`       | get      | 譜面の最小タイミング                           |
 | `IgnoreSpeedChangesAfterJudgeLine` | `bool`       | get      | 判定ライン以降のスピード変動を無視するかどうか |
-| `NotesInstantiationInterval`       | `int`        | get      | ノート生成タイミングの間隔(ミリ秒)             |
-> 各プロパティの詳細な挙動はプログラム中のコメントを参照してください
+| `NotesInstantiationInterval`       | `int`        | get      | ノート生成タイミングの間隔（ミリ秒）             |
+`IgnoreSpeedChangesAfterJudgeLine` が `true` の場合、判定ライン通過後は速度倍率を `1` に固定する。
 
 #### コンストラクタ
 
@@ -240,7 +247,7 @@ public AnalysisSetting(BasicSpeed basicSpeed, long minimumTiming, bool ignoreSpe
   - `basicSpeed`：ノートの基本移動速度
   - `minimumTiming`：譜面の最小タイミング
   - `ignoreSpeedChangesAfterJudgeLine`：判定ライン以降のスピード変動を無視するかどうか
-  - `notesInstantiationInterval`：ノート生成タイミングの間隔(ミリ秒) 
+  - `notesInstantiationInterval`：ノート生成タイミングの間隔（ミリ秒）
 - 例外/注意：
   - `notesInstantiationInterval` が `1` より小さい場合、`ArgumentOutOfRangeException` を送出する
   - `basicSpeed` が `null` の場合、`ArgumentNullException` を送出する
@@ -256,7 +263,7 @@ public AnalysisSetting(BasicSpeed basicSpeed, long minimumTiming, bool ignoreSpe
 ### ChartPlaybackData
 
 - 概要：譜面の再生に必要な情報群を保持するクラス
-- 利用方法：`UocObject` 経由で取得（new は不可）
+- 利用方法：`UocObject` 経由で取得（`new` は不可）
 
 #### プロパティ
 
@@ -277,7 +284,7 @@ public AnalysisSetting(BasicSpeed basicSpeed, long minimumTiming, bool ignoreSpe
 public IReadOnlyList<NotePlaybackProvider> GetSingleNotePlaybackProviders()
 ```
 - 役割：単体ノートの再生プロバイダのリストを取得する
-  - いずれかのグループに所属するノートは含まれない
+  - ノートIDがいずれかのノートグループ定義に含まれるノートは除外される
   - 生成タイミングで昇順
 - 引数：
   - なし
@@ -301,7 +308,7 @@ public IReadOnlyList<NoteGroupPlaybackProvider> GetNoteGroupPlaybackProviders()
 ### NotePlaybackProvider
 
 - 概要：単体ノートの再生に関する情報を提供するクラス
-- 利用方法：`ChartPlaybackData`, `NoteGroupPlaybackProvider` 経由で取得（new は不可）
+- 利用方法：`ChartPlaybackData`、`NoteGroupPlaybackProvider` 経由で取得（`new` は不可）
 
 #### プロパティ
 
@@ -329,14 +336,17 @@ public float CalculateNotePosition(long timing)
   - `timing`：タイミング
 - 戻り値：
   - `float`：ノートの位置
-    - ノート生成位置を1、判定位置を0とし、それ以降は負の値をとる
+    - ノート生成位置を1、判定位置を0とする
+    - 対象レイヤの速度倍率0では停止し、負数では逆方向へ移動する
+    - 速度倍率が正の場合、判定位置を通過した後は負の値をとる
+    - `IgnoreSpeedChangesAfterJudgeLine` が `true` の場合、判定ライン通過後は速度倍率を `1` として計算する
 
 ---
 
 ### NoteGroupPlaybackProvider
 
 - 概要：ノートグループの再生に関する情報を提供するクラス
-- 利用方法：`ChartPlaybackData` 経由で取得（new は不可）
+- 利用方法：`ChartPlaybackData` 経由で取得（`new` は不可）
 
 #### プロパティ
 
@@ -362,6 +372,7 @@ public float CalculateNotePosition(long timing)
 
 - 概要：ノートの基本移動速度を保持するクラス（値オブジェクト）
 - 利用方法：`new` で生成
+- 実装：`IEquatable<BasicSpeed>`
 
 #### プロパティ
 
@@ -398,7 +409,7 @@ public BasicSpeed(float moveDuration)
 
 | 名前            | 型                | アクセス | 内容                                         |
 | --------------- | ----------------- | -------- | -------------------------------------------- |
-| `One`（Static） | `SpeedMultiplier` | get      | 倍率が `1` の `SpeedMultiplier` インスタンス |
+| `One`（static） | `SpeedMultiplier` | get      | 倍率が `1` の `SpeedMultiplier` インスタンス |
 | `Multiplier`    | `float`           | get      | ノートの移動速度倍率                         |
 
 #### コンストラクタ
@@ -453,15 +464,22 @@ public Bpm(float value)
 
 ### Layer
 
-- 概要：レイヤー情報を保持するクラス（値オブジェクト）
+- 概要：レイヤ情報を保持するクラス（値オブジェクト）
 - 利用方法：`new` で生成
 - 実装：`IEquatable<Layer>`
+
+#### 定数
+
+| 名前            | 型    | 値   | 内容                 |
+| --------------- | ----- | ---- | -------------------- |
+| `MinLayerValue` | `int` | `0`  | レイヤ値の最小値   |
+| `MaxLayerValue` | `int` | `30` | レイヤ値の最大値   |
 
 #### プロパティ
 
 | 名前    | 型    | アクセス | 内容       |
 | ------- | ----- | -------- | ---------- |
-| `Value` | `int` | get      | レイヤー値 |
+| `Value` | `int` | get      | レイヤ値 |
 
 #### コンストラクタ
 
@@ -470,9 +488,9 @@ public Bpm(float value)
 ```csharp
 public Layer(int value)
 ```
-- 役割：レイヤー値を保持するインスタンスを生成する
+- 役割：レイヤ値を保持するインスタンスを生成する
 - 引数：
-  - `value`：レイヤー値
+  - `value`：レイヤ値
 - 例外/注意：
   - `value` が `0` 未満の場合または `30` より大きい場合、`ArgumentOutOfRangeException` を送出する
 
@@ -544,9 +562,9 @@ public Tick(float value)
 ```csharp
 public Tpb(int value)
 ```
-- 役割：Tpb値を保持するインスタンスを生成する
+- 役割：TPB値を保持するインスタンスを生成する
 - 引数：
-  - `value`：Tpb値
+  - `value`：TPB値
 - 例外/注意：
   - `value` が `0` 以下の場合、`ArgumentOutOfRangeException` を送出する
 
@@ -568,10 +586,9 @@ public Tpb(int value)
 
 | 名前                     | 型             | アクセス | 内容                                   |
 | ------------------------ | -------------- | -------- | -------------------------------------- |
-| `ChartStart`（Static）   | `Position`     | get      | 譜面の始点を表す位置                   |
-| `MeasureStart`（Static） | `Position`     | get      | 引数で指定された小節内の始点を表す位置 |
+| `ChartStart`（static）   | `Position`     | get      | 譜面の始点を表す位置                   |
 | `MeasureIndex`           | `MeasureIndex` | get      | 小節番号                               |
-| `Position01`             | `float`        | get      | 小節内での位置を 0~1 で表した値        |
+| `Position01`             | `float`        | get      | 小節内での位置を0以上1未満で表した値   |
 | `SectionCount`           | `int`          | get      | 小節のセクション数                     |
 | `ActiveIndex`            | `int`          | get      | 有効セクション位置（0始まり）          |
 
@@ -588,23 +605,41 @@ public Position(MeasureIndex measureIndex, int sectionCount, int activeIndex)
   - `sectionCount`：小節のセクション数
   - `activeIndex`：有効セクション位置（0始まり）
 - 例外/注意：
+  - `measureIndex` が `null` の場合、`ArgumentNullException` を送出する
   - `sectionCount` が `1` 未満の場合、`ArgumentOutOfRangeException` を送出する
   - `activeIndex` が `0` 未満の場合、`ArgumentOutOfRangeException` を送出する
   - `activeIndex` が `sectionCount` 以上の場合、`ArgumentOutOfRangeException` を送出する
+  - `sectionCount` と `activeIndex` は生成時に約分される
 
 #### メソッド
 
-##### CreateFromQuarterNotesCount（Static）
+##### MeasureStart（static）
+
+```csharp
+public static Position MeasureStart(MeasureIndex measureIndex)
+```
+- 役割：指定された小節内の始点を表す `Position` を作成する
+- 引数：
+  - `measureIndex`：小節番号
+- 戻り値：
+  - `Position`：指定された小節内の始点
+- 例外/注意：
+  - `measureIndex` が `null` の場合、`ArgumentNullException` を送出する
+
+##### CreateFromQuarterNotesCount（static）
 
 ```csharp
 public static Position CreateFromQuarterNotesCount(float quarterNoteCount, MeasureLengthProvider measureLengthProvider)
 ```
 - 役割：譜面位置までの四分音符の数から `Position` を作成する
 - 引数：
-  - `quarterNoteCount`：譜面位置までの四分音符の数
+  - `quarterNoteCount`：譜面位置までの四分音符の数。有限の非負値を指定する
   - `measureLengthProvider`：小節長プロバイダ
 - 戻り値：
-  - `Distance`：作成された `Distance` インスタンス
+  - `Position`：作成された `Position` インスタンス
+- 例外/注意：
+  - `quarterNoteCount` が有限の非負値でない場合、または位置を `int` の範囲内の分数で表せない場合、`ArgumentOutOfRangeException` を送出する
+  - `measureLengthProvider` が `null` の場合、`ArgumentNullException` を送出する
 
 ##### IsMeasureStart
 
@@ -663,7 +698,7 @@ public Position AddDistance(Distance distance, MeasureLengthProvider measureLeng
   - `distance`：追加する距離
   - `measureLengthProvider`：小節長プロバイダ
 - 戻り値：
-  - `Position`：距離が加算された `Position` 
+  - `Position`：距離が加算された `Position`
 
 ##### RecalculatePosition
 
@@ -675,7 +710,7 @@ public Position RecalculatePosition(MeasureLengthProvider oldMeasureLengthProvid
   - `oldMeasureLengthProvider`：変更前の小節長プロバイダ
   - `newMeasureLengthProvider`：変更後の小節長プロバイダ
 - 戻り値：
-  - `Position`：再計算された `Position` 
+  - `Position`：再計算された `Position`
 
 ##### GetTotalQuarterNoteCount
 
@@ -687,6 +722,24 @@ public float GetTotalQuarterNoteCount(MeasureLengthProvider measureLengthProvide
   - `measureLengthProvider`：小節長プロバイダ
 - 戻り値：
   - `float`：譜面位置までの四分音符の数
+
+##### CompareTo
+
+```csharp
+public int CompareTo(Position? other)
+```
+- 役割：この位置と指定された位置の前後関係を比較する
+- 引数：
+  - `other`：比較対象の位置
+- 戻り値：
+  - `int`：この位置が前なら負数、同じなら `0`、後なら正数
+- 例外/注意：
+  - `other` が `null` の場合、`ArgumentNullException` を送出する
+  - 小節番号を先に比較し、同一小節内では位置を分数のまま比較する
+
+#### 演算子
+
+`>`、`<`、`>=`、`<=` により、2つの `Position` の前後関係を比較できる。
 
 ---
 
@@ -717,7 +770,7 @@ public Distance(float quarterNoteCount)
 
 #### メソッド
 
-##### CreateFromDifference（Static）
+##### CreateFromDifference（static）
 
 ```csharp
 public static Distance CreateFromDifference(Position start, Position end, MeasureLengthProvider measureLengthProvider)
@@ -742,10 +795,6 @@ public Distance Absolute()
   - `Distance`：保持する距離の絶対値を持つ新たな `Distance` インスタンス
 
 ---
-
-
-
-
 
 ### MeasureIndex
 
@@ -783,14 +832,13 @@ public MeasureIndex(int value)
 - 概要：小節長情報を保持するクラス
   - 分子は小節内の拍数、分母は1拍に相当する音符の種類を示す
 - 利用方法：`new` で生成
-- 実装：`IEquatable<MeasureLength>`
 
 #### プロパティ
 
 | 名前          | 型    | アクセス | 内容                                                      |
 | ------------- | ----- | -------- | --------------------------------------------------------- |
-| `Numerator`   | `int` | get      | 小節内の拍数（例: 4/4拍子なら4）                          |
-| `Denominator` | `int` | get      | 1拍として扱う音符の種類（例: 4/4拍子なら4、4/2拍子なら2） |
+| `Numerator`   | `int` | get      | 小節内の拍数（例：4/4拍子なら4）                          |
+| `Denominator` | `int` | get      | 1拍として扱う音符の種類（例：4/4拍子なら4、4/2拍子なら2） |
 
 #### コンストラクタ
 
@@ -829,10 +877,10 @@ public float GetQuarterNoteCount()
   - なし
 - 戻り値：
   - `float`：小節内の四分音符換算の拍数
-    - 4/4拍子: 4 * (4/4) = 4
-    - 4/2拍子: 4 * (4/2) = 8
-    - 2/4拍子: 2 * (4/4) = 2
-    - 2/2拍子: 2 * (4/2) = 4
+    - 4/4拍子：4 ×（4/4）= 4
+    - 4/2拍子：4 ×（4/2）= 8
+    - 2/4拍子：2 ×（4/4）= 2
+    - 2/2拍子：2 ×（4/2）= 4
 
 ---
 
@@ -841,7 +889,7 @@ public float GetQuarterNoteCount()
 ### EventProviders
 
 - 概要：各種イベントを提供するクラス
-- 利用方法：`NoteProfileCollection` 経由で取得（new は不可）
+- 利用方法：`NoteProfileCollection` 経由で取得（`new` は不可）
 
 #### プロパティ
 
@@ -865,8 +913,8 @@ public float GetQuarterNoteCount()
 
 - 概要：BPM情報を提供するクラス
 - 利用方法：
-  - `EventProviders` 経由で取得（new は不可）
-  - `NoteProfileCollection` 経由で作成（new は不可）
+  - `EventProviders` 経由で取得（`new` は不可）
+  - `NoteProfileCollection` 経由で作成（`new` は不可）
 
 #### プロパティ
 
@@ -906,7 +954,7 @@ public IReadOnlyList<BpmChangeEvent> GetBpmChangeEventsAt(int measureIndex)
 ### BpmChangeEvent
 
 - 概要：単体のBPM変動イベントを表すクラス
-- 利用方法：`BpmProvider` 経由で取得（new は不可）
+- 利用方法：`BpmProvider` 経由で取得（`new` は不可）
 
 #### プロパティ
 
@@ -930,8 +978,8 @@ public IReadOnlyList<BpmChangeEvent> GetBpmChangeEventsAt(int measureIndex)
 
 - 概要：小節長情報を提供するクラス
 - 利用方法：
-  - `EventProviders` 経由で取得（new は不可）
-  - `NoteProfileCollection` 経由で作成（new は不可）
+  - `EventProviders` 経由で取得（`new` は不可）
+  - `NoteProfileCollection` 経由で作成（`new` は不可）
 
 #### プロパティ
 
@@ -959,7 +1007,9 @@ public MeasureLength GetMeasureLengthAt(int measureIndex)
 ### MeasureLengthChangeEvent
 
 - 概要：単体の小節長変動イベントを表すクラス
-- 利用方法：`MeasureLengthProvider` 経由で取得（new は不可）
+- 利用方法：
+  - `new` で生成
+  - `MeasureLengthProvider` 経由で取得
 
 #### プロパティ
 
@@ -970,7 +1020,18 @@ public MeasureLength GetMeasureLengthAt(int measureIndex)
 
 #### コンストラクタ
 
-- なし
+##### MeasureLengthChangeEvent
+
+```csharp
+public MeasureLengthChangeEvent(Position position, MeasureLength measureLength)
+```
+- 役割：小節長変動イベントを生成する
+- 引数：
+  - `position`：イベントの位置
+  - `measureLength`：適用する小節長
+- 例外/注意：
+  - `position` または `measureLength` が `null` の場合、`ArgumentNullException` を送出する
+  - `position` が小節の始点でない場合、`ArgumentException` を送出する
 
 #### メソッド
 
@@ -982,8 +1043,8 @@ public MeasureLength GetMeasureLengthAt(int measureIndex)
 
 - 概要：スピード倍率情報を提供するクラス
 - 利用方法：
-  - `EventProviders` 経由で取得（new は不可）
-  - `NoteProfileCollection` 経由で作成（new は不可）
+  - `EventProviders` 経由で取得（`new` は不可）
+  - `NoteProfileCollection` 経由で作成（`new` は不可）
 
 #### プロパティ
 
@@ -1003,9 +1064,11 @@ public SpeedMultiplier GetMeasureStartSpeedMultiplier(int measureIndex, Layer la
 - 役割：指定された小節の始点スピード倍率を取得する
 - 引数：
   - `measureIndex`：小節番号（単純化のため `int` 型）
-  - `layer`：検索対象レイヤー
+  - `layer`：検索対象レイヤ
 - 戻り値：
   - `SpeedMultiplier`：指定された小節の始点スピード倍率
+- 例外/注意：
+  - `measureIndex` が `0` 未満の場合、`ArgumentOutOfRangeException` を送出する
 
 ##### GetSpeedMultiplierChangeEventsAt
 
@@ -1017,29 +1080,47 @@ public IReadOnlyList<SpeedMultiplierChangeEvent> GetSpeedMultiplierChangeEventsA
 - 引数：
   - `startMeasureIndex`：開始小節番号（範囲に含む）
   - `endMeasureIndex`：終了小節番号（範囲に含む）
-  - `layer`：検索対象レイヤー
+  - `layer`：検索対象レイヤ
 - 戻り値：
   - `IReadOnlyList<SpeedMultiplierChangeEvent>`：指定された小節範囲内のスピード変動イベントリスト
+- 例外/注意：
+  - `startMeasureIndex` または `endMeasureIndex` が `0` 未満の場合、`ArgumentOutOfRangeException` を送出する
+  - `startMeasureIndex` が `endMeasureIndex` より大きい場合、`ArgumentException` を送出する
 
 ---
 
 ### SpeedMultiplierChangeEvent
 
 - 概要：単体のスピード倍率変動イベントを表すクラス
-- 利用方法：`SpeedMultiplierProvider` 経由で取得（new は不可）
+- 利用方法：
+  - `new` で生成
+  - `SpeedMultiplierProvider` 経由で取得
 
 #### プロパティ
 
 | 名前              | 型                | アクセス | 内容                                 |
 | ----------------- | ----------------- | -------- | ------------------------------------ |
 | `MeasureIndex`    | `MeasureIndex`    | get      | 小節番号                             |
-| `Layer`           | `Layer`           | get      | イベントが適用されるレイヤー         |
+| `Layer`           | `Layer`           | get      | イベントが適用されるレイヤ         |
 | `SpeedMultiplier` | `SpeedMultiplier` | get      | イベントが適用するスピード倍率       |
 | `Tick`            | `Tick`            | get      | イベントが適用される小節内のティック |
 
 #### コンストラクタ
 
-- なし
+##### SpeedMultiplierChangeEvent
+
+```csharp
+public SpeedMultiplierChangeEvent(Position position, Layer layer, SpeedMultiplier speedMultiplier, MeasureLengthProvider measureLengthProvider, Tpb tpb)
+```
+- 役割：スピード倍率変動イベントを生成する
+- 引数：
+  - `position`：イベントの位置
+  - `layer`：イベントを適用するレイヤ
+  - `speedMultiplier`：適用するスピード倍率
+  - `measureLengthProvider`：小節長プロバイダ
+  - `tpb`：TPB（一拍の分解能）
+- 例外/注意：
+  - いずれかの引数が `null` の場合、`ArgumentNullException` を送出する
 
 #### メソッド
 
@@ -1062,7 +1143,7 @@ public IReadOnlyList<SpeedMultiplierChangeEvent> GetSpeedMultiplierChangeEventsA
 | `NoteId`        | `NoteId`        | get      | ノートのID   |
 | `Position`      | `Position`      | get      | ノートの位置 |
 | `PropertyGroup` | `PropertyGroup` | get      | プロパティ値 |
-| `Layer`         | `Layer`         | get      | レイヤー     |
+| `Layer`         | `Layer`         | get      | レイヤ     |
 | `Channel`       | `Channel`       | get      | チャンネル   |
 | `Guid`          | `Guid`          | get      | ノートのGUID |
 
@@ -1078,11 +1159,11 @@ public NoteProfile(NoteDef noteDef, Position position, IReadOnlyList<string> pro
   - `noteDef`：ノート定義
   - `position`：ノートの位置
   - `propertyValues`：プロパティ値のリスト
-  - `layer`：レイヤー
+  - `layer`：レイヤ
   - `channel`：チャンネル
   - `guid`：ノートのGUID
 - 例外/注意：
-  - いずれかの引数が `null` の場合、`ArgumentNullException` を送出する
+  - `noteDef`、`position`、`propertyValues`、`layer`、`channel` のいずれかが `null` の場合、`ArgumentNullException` を送出する
 
 ##### NoteProfile
 
@@ -1094,11 +1175,11 @@ public NoteProfile(NoteDef noteDef, Position position, IReadOnlyList<string> pro
   - `noteDef`：ノート定義
   - `position`：ノートの位置
   - `propertyValues`：プロパティ値のリスト
-  - `layer`：レイヤー
+  - `layer`：レイヤ
   - `channel`：チャンネル
 - 例外/注意：
-  - いずれかの引数が `null` の場合、`ArgumentNullException` を送出する
-  - ランダムな `Guid` が新規に生成される
+  - `noteDef`、`position`、`propertyValues`、`layer`、`channel` のいずれかが `null` の場合、`ArgumentNullException` を送出する
+  - ランダムな GUID が新規に生成される
 
 #### メソッド
 
@@ -1112,6 +1193,9 @@ public NoteProfile UpdatePosition(Position position)
   - `position`：新しいノート位置
 - 戻り値：
   - `NoteProfile`：ノート位置が更新された新しい `NoteProfile` インスタンス
+- 例外/注意：
+  - 元のノートのGUIDを維持する
+  - `position` が `null` の場合、`ArgumentNullException` を送出する
 
 ##### UpdatePropertyGroup
 
@@ -1123,7 +1207,10 @@ public NoteProfile UpdatePropertyGroup(PropertyGroup propertyGroup)
   - `propertyGroup`：新しいプロパティグループ
 - 戻り値：
   - `NoteProfile`：プロパティグループが更新された新しい `NoteProfile` インスタンス
-
+- 例外/注意：
+  - 元のノートのGUIDを維持する
+  - プロパティ値は元の `NoteDef.PropertyNames` の順序へ割り当て直される
+  - `propertyGroup` が `null` の場合、`NullReferenceException` を送出する
 
 ##### UpdateChannel
 
@@ -1135,15 +1222,18 @@ public NoteProfile UpdateChannel(Channel channel)
   - `channel`：新しいチャンネル
 - 戻り値：
   - `NoteProfile`：チャンネルが更新された新しい `NoteProfile` インスタンス
+- 例外/注意：
+  - 元のノートのGUIDを維持する
+  - `channel` が `null` の場合、`ArgumentNullException` を送出する
 
 ---
 
 ### NoteProfileCollection
 
-- 概要：複数の `NoteProfile` を管理するファーストコレクションクラス
+- 概要：複数の `NoteProfile` を管理するコレクションクラス
 - 利用方法：
-  - `UocObject` 経由で取得（new は不可）
-  - `CreateMinimum` メソッドで作成（new は不可）
+  - `UocObject` 経由で取得（`new` は不可）
+  - `CreateMinimum` メソッドで作成（`new` は不可）
 
 #### プロパティ
 
@@ -1157,7 +1247,7 @@ public NoteProfile UpdateChannel(Channel channel)
 
 #### メソッド
 
-##### CreateMinimum（Static）
+##### CreateMinimum（static）
 
 ```csharp
 public static NoteProfileCollection CreateMinimum(MeasureLength measureLength, Bpm bpm, SpeedMultiplier speedMultiplier, Layer layer)
@@ -1167,7 +1257,7 @@ public static NoteProfileCollection CreateMinimum(MeasureLength measureLength, B
   - `measureLength`：初期小節長
   - `bpm`：初期BPM
   - `speedMultiplier`：初期スピード倍率（推奨値：1.0）
-  - `layer`：初期情報ノーツを配置するレイヤー
+  - `layer`：初期情報ノーツを配置するレイヤ
 - 戻り値：
   - `NoteProfileCollection`：作成された `NoteProfileCollection` インスタンス
 
@@ -1176,8 +1266,9 @@ public static NoteProfileCollection CreateMinimum(MeasureLength measureLength, B
 ```csharp
 public NoteGroupProfileCollection CreateNoteGroupProfileCollection(NoteGroupDefCollection noteGroupDefCollection)
 ```
-- 役割：保持するノーツ情報から `NoteGroupProfileCollection` を作成する 
+- 役割：保持するノーツ情報から `NoteGroupProfileCollection` を作成する
   - ただし一度作成された `NoteGroupProfileCollection` インスタンスはキャッシュされ、以後はそれを返却する
+  - 2回目以降に渡された `noteGroupDefCollection` は使用されない
 - 引数：
   - `noteGroupDefCollection`：ノートグループ定義コレクション
 - 戻り値：
@@ -1188,12 +1279,12 @@ public NoteGroupProfileCollection CreateNoteGroupProfileCollection(NoteGroupDefC
 ```csharp
 public NoteProfile? GetNoteProfileByGuid(Guid guid)
 ```
-- 役割：指定された `Guid` を持つ `NoteProfile` を探索して返す
+- 役割：指定された GUID を持つ `NoteProfile` を探索して返す
   - ただし見つからなかった場合は `null` を返す
 - 引数：
   - `guid`：探索するノートGUID
 - 戻り値：
-  - `NoteProfile`：指定された `Guid` を持つ `NoteProfile` インスタンス
+  - `NoteProfile?`：指定された GUID を持つ `NoteProfile`。見つからない場合は `null`
 
 ##### PutOrReplace
 
@@ -1261,6 +1352,8 @@ public MeasureIndex GetMaxMeasureIndex()
   - なし
 - 戻り値：
   - `MeasureIndex`：譜面の最大小節番号
+- 例外/注意：
+  - ノートを保持していない場合、`InvalidOperationException` を送出する
 
 ##### CreateEventProviders
 
@@ -1283,6 +1376,8 @@ public MeasureLengthProvider CreateMeasureLengthProvider()
   - なし
 - 戻り値：
   - `MeasureLengthProvider`：小節長プロバイダ
+- 例外/注意：
+  - 小節長変更ノートが存在しない場合、または譜面始点に存在しない場合、`ArgumentException` を送出する
 
 ##### CreateBpmProvider
 
@@ -1295,6 +1390,8 @@ public BpmProvider CreateBpmProvider(MeasureLengthProvider measureLengthProvider
   - `tpb`：TPB（一拍の分解能）
 - 戻り値：
   - `BpmProvider`：BPMプロバイダ
+- 例外/注意：
+  - BPM変更ノートが存在しない場合、または譜面始点に存在しない場合、`ArgumentException` を送出する
 
 ##### CreateSpeedMultiplierProvider
 
@@ -1321,7 +1418,7 @@ public SpeedMultiplierProvider CreateSpeedMultiplierProvider(MeasureLengthProvid
 | `NoteGroupDef` | `NoteGroupDef`               | get      | ノートグループ定義       |
 | `NoteGroupId`  | `NoteGroupId`                | get      | ノートグループID         |
 | `BelongsNotes` | `IReadOnlyList<NoteProfile>` | get      | グループに所属するノーツ |
-| `Guid`         | `Guid`                       | get      | ノートグループのGuid     |
+| `Guid`         | `Guid`                       | get      | ノートグループのGUID     |
 
 #### コンストラクタ
 
@@ -1334,10 +1431,22 @@ public NoteGroupProfile(NoteGroupDef noteGroupDef, IReadOnlyList<NoteProfile> be
 - 引数：
   - `noteGroupDef`：ノートグループ定義
   - `belongsNotes`：グループに所属するノーツ
-  - `guid`ノートグループのGuid
+  - `guid`：ノートグループのGUID
 - 例外/注意：
-  - いずれかの引数が `null` の場合、`ArgumentNullException` を送出する
-  - ランダムな `Guid` が新規に生成される
+  - `noteGroupDef` または `belongsNotes` が `null` の場合、`ArgumentNullException` を送出する
+
+##### NoteGroupProfile
+
+```csharp
+public NoteGroupProfile(NoteGroupDef noteGroupDef, IReadOnlyList<NoteProfile> belongsNotes)
+```
+- 役割：ノートグループを構成する情報からインスタンスを生成する
+- 引数：
+  - `noteGroupDef`：ノートグループ定義
+  - `belongsNotes`：グループに所属するノーツ
+- 例外/注意：
+  - `noteGroupDef` または `belongsNotes` が `null` の場合、`ArgumentNullException` を送出する
+  - ランダムな GUID が新規に生成される
 
 #### メソッド
 
@@ -1347,9 +1456,9 @@ public NoteGroupProfile(NoteGroupDef noteGroupDef, IReadOnlyList<NoteProfile> be
 
 ### NoteGroupProfileCollection
 
-- 概要：複数の `NoteGroupProfile` を管理するファーストコレクションクラス
+- 概要：複数の `NoteGroupProfile` を管理するコレクションクラス
 - 利用方法：
-  - `NoteProfileCollection` 経由で取得（new は不可）
+  - `NoteProfileCollection` 経由で取得（`new` は不可）
 
 #### プロパティ
 
@@ -1366,14 +1475,14 @@ public NoteGroupProfile(NoteGroupDef noteGroupDef, IReadOnlyList<NoteProfile> be
 ##### GetNoteGroupProfileByGuid
 
 ```csharp
-public NoteGroupProfile GetNoteGroupProfileByGuid(Guid guid)
+public NoteGroupProfile? GetNoteGroupProfileByGuid(Guid guid)
 ```
-- 役割：指定された `Guid` を持つ `NoteGroupProfile` を探索して返す
+- 役割：指定された GUID を持つ `NoteGroupProfile` を探索して返す
   - ただし見つからなかった場合は `null` を返す
 - 引数：
   - `guid`：探索するノートGUID
 - 戻り値：
-  - `NoteGroupProfile`：指定された `Guid` を持つ `NoteGroupProfile` インスタンス
+  - `NoteGroupProfile?`：指定された GUID を持つ `NoteGroupProfile`。見つからない場合は `null`
 
 ##### TryGetNoteBelongingGroup
 
@@ -1412,7 +1521,7 @@ public NoteId(string value)
 - 引数：
   - `value`：ノートID
 - 例外/注意：
-  - `value` が `null` / 空文字 / 空白のみの場合、`ArgumentException` を送出する
+  - `value` が `null`、空文字、空白のみの場合、`ArgumentException` を送出する
 
 #### メソッド
 
@@ -1443,7 +1552,7 @@ public NoteGroupId(string value)
 - 引数：
   - `value`：ノートグループID
 - 例外/注意：
-  - `value` が `null` / 空文字 / 空白のみの場合、`ArgumentException` を送出する
+  - `value` が `null`、空文字、空白のみの場合、`ArgumentException` を送出する
 
 #### メソッド
 
@@ -1451,21 +1560,21 @@ public NoteGroupId(string value)
 
 ---
 
-
-
 ### Channel
 
 - 概要：ノートのチャンネルを保持するクラス（値オブジェクト）
 - 利用方法：`new` で生成
-- 実装：`IEquatable<Channel>`
+- 実装：`IEquatable<Channel?>`
 
 #### プロパティ
 
 | 名前              | 型        | アクセス | 内容                                            |
 | ----------------- | --------- | -------- | ----------------------------------------------- |
-| `Empty`（Static） | `Channel` | get      | チャンネル情報を持たない `Channel` インスタンス |
+| `Empty`（static） | `Channel` | get      | チャンネル情報を持たない `Channel` インスタンス |
 | `IsEmpty`         | `bool`    | get      | チャンネル情報を持っていないかどうか            |
 | `Value`           | `int`     | get      | チャンネル値                                    |
+
+`Empty` が返すインスタンスの `Value` を取得した場合、`InvalidOperationException` を送出する。
 
 #### コンストラクタ
 
@@ -1478,7 +1587,7 @@ public Channel(int value)
 - 引数：
   - `value`：ノートのチャンネル
 - 例外/注意：
-  - `value` が `0` 未満もしくは `1224` より大きい場合、`ArgumentOutOfRangeException` を送出する
+  - `value` が `0` 未満もしくは `1295` より大きい場合、`ArgumentOutOfRangeException` を送出する
 
 #### メソッド
 
@@ -1517,34 +1626,45 @@ public ChannelProvider(NoteGroupDefCollection noteGroupDefCollection, NoteProfil
 public Channel GetAvailableChannel(Position startPosition, Position endPosition, Layer layer)
 ```
 - 役割：指定された範囲内で利用可能なチャンネルを取得する
+  - 対象レイヤで、指定範囲と端点を含めて重なる予約が使用していない最小のチャンネル値を返す
 - 引数：
   - `startPosition`：範囲始点
   - `endPosition`：範囲終点
-  - `layer`：対象レイヤー
+  - `layer`：対象レイヤ
 - 戻り値：
   - `Channel`：指定された範囲内で利用可能なチャンネル
+- 例外/注意：
+  - ノートグループの終点ノートが見つからない場合、`InvalidOperationException` を送出する
+  - 利用可能なチャンネル値が範囲内にない場合、`ArgumentOutOfRangeException` を送出する
 
 ##### GetAvailableChannelAndAddReservation
 
 ```csharp
 public Channel GetAvailableChannelAndAddReservation(Position startPosition, Position endPosition, Layer layer)
 ```
-- 役割：指定された範囲内で利用可能なチャンネルを取得し、指定された範囲のチャンネルを予約します。クラスが状態を持つようになるため、取り扱いには注意してください。
+- 役割：指定された範囲内で利用可能なチャンネルを取得し、その範囲を予約する
+  - このメソッドの呼び出し後は予約が保持される
+  - 対象レイヤで、指定範囲と端点を含めて重なる予約が使用していない最小のチャンネル値を返す
 - 引数：
   - `startPosition`：範囲始点
   - `endPosition`：範囲終点
-  - `layer`：対象レイヤー
+  - `layer`：対象レイヤ
 - 戻り値：
   - `Channel`：指定された範囲内で利用可能なチャンネル
+- 例外/注意：
+  - ノートグループの終点ノートが見つからない場合、`InvalidOperationException` を送出する
+  - 利用可能なチャンネル値が範囲内にない場合、`ArgumentOutOfRangeException` を送出する
 
 ##### ClearAddedReservations
 
 ```csharp
 public void ClearAddedReservations()
 ```
-- 役割：`GetAvailableChannelAndAddReservation` メソッドにより追加されたすべての予約を削除します。
-- 引数：なし
-- 戻り値： なし
+- 役割：`GetAvailableChannelAndAddReservation` メソッドにより追加されたすべての予約を削除する
+- 引数：
+  - なし
+- 戻り値：
+  - なし
 
 ---
 
@@ -1559,12 +1679,12 @@ public void ClearAddedReservations()
 
 | 名前                            | 型                       | アクセス | 内容                               |
 | ------------------------------- | ------------------------ | -------- | ---------------------------------- |
-| `BpmChange`（Static）           | `NoteDef`                | get      | BPM変更ノートのノート定義          |
-| `SpeedChange`（Static）         | `NoteDef`                | get      | スピード倍率変更ノートのノート定義 |
-| `MeasureLengthChange`（Static） | `NoteDef`                | get      | 小節長変更ノートのノート定義       |
+| `BpmChange`（static）           | `NoteDef`                | get      | BPM変更ノートのノート定義          |
+| `SpeedChange`（static）         | `NoteDef`                | get      | スピード倍率変更ノートのノート定義 |
+| `MeasureLengthChange`（static） | `NoteDef`                | get      | 小節長変更ノートのノート定義       |
 | `NoteId`                        | `NoteId`                 | get      | ノートID                           |
 | `PropertyNames`                 | `IReadOnlyList<string>`  | get      | ノートプロパティ名のリスト         |
-| `CommonNoteDefs`（Static）      | `IReadOnlyList<NoteDef>` | get      | 仕様で定義されたノート定義リスト   |
+| `CommonNoteDefs`（static）      | `IReadOnlyList<NoteDef>` | get      | 仕様で定義されたノート定義リスト   |
 
 #### コンストラクタ
 
@@ -1578,7 +1698,7 @@ public NoteDef(NoteId noteId, IReadOnlyList<string> propertyNames)
   - `noteId`：ノートID
   - `propertyNames`：ノートプロパティ名のリスト
 - 例外/注意：
-  - いずれかの引数が `null` の場合、`ArgumentNullException` を送出する
+  - `noteId` または `propertyNames` が `null` の場合、`ArgumentNullException` を送出する
 
 #### メソッド
 
@@ -1588,7 +1708,7 @@ public NoteDef(NoteId noteId, IReadOnlyList<string> propertyNames)
 
 ### NoteDefCollection
 
-- 概要：複数の `NoteDef` を管理するファーストコレクションクラス
+- 概要：複数の `NoteDef` を管理するコレクションクラス
 - 利用方法：`new` で生成
 
 #### プロパティ
@@ -1693,6 +1813,7 @@ public NoteGroupDef(NoteGroupId noteGroupId, IReadOnlyList<NoteId> belongsNoteId
   - `belongsNoteIds`：ノートグループに所属するノートのIDのリスト
 - 例外/注意：
   - いずれかの引数が `null` の場合、`ArgumentNullException` を送出する
+  - `belongsNoteIds` が空の場合、`StartNoteId` と `EndNoteId` は取得できない
 
 #### メソッド
 
@@ -1702,7 +1823,7 @@ public NoteGroupDef(NoteGroupId noteGroupId, IReadOnlyList<NoteId> belongsNoteId
 
 ### NoteGroupDefCollection
 
-- 概要：複数の `NoteGroupDef` を管理するファーストコレクションクラス
+- 概要：複数の `NoteGroupDef` を管理するコレクションクラス
 - 利用方法：`new` で生成
 
 #### プロパティ
@@ -1736,6 +1857,9 @@ public NoteGroupDef GetNoteGroupDefById(NoteGroupId noteGroupId)
   - `noteGroupId`：ノートグループID
 - 戻り値：
   - `NoteGroupDef`：指定されたノートグループIDを持つ `NoteGroupDef` インスタンス
+- 例外/注意：
+  - `noteGroupId` が `null` の場合、`NullReferenceException` を送出する
+  - ノートグループ定義が見つからない場合、`KeyNotFoundException` を送出する
 
 ##### GetNoteGroupDefById
 
@@ -1747,17 +1871,22 @@ public NoteGroupDef GetNoteGroupDefById(string noteGroupId)
   - `noteGroupId`：ノートグループID文字列
 - 戻り値：
   - `NoteGroupDef`：指定されたノートグループIDを持つ `NoteGroupDef` インスタンス
+- 例外/注意：
+  - `noteGroupId` が `null` の場合、`ArgumentNullException` を送出する
+  - ノートグループ定義が見つからない場合、`KeyNotFoundException` を送出する
 
 ##### GetNoteGroupDefByStartNoteId
 
 ```csharp
-public NoteGroupDef GetNoteGroupDefByStartNoteId(NoteId noteId)
+public NoteGroupDef GetNoteGroupDefByStartNoteId(NoteId startNoteId)
 ```
 - 役割：始点ノートIDからノートグループ定義を取得する
 - 引数：
-  - `noteId`：始点ノートID
+  - `startNoteId`：始点ノートID
 - 戻り値：
   - `NoteGroupDef`：始点ノートが指定されたノートIDを持つ `NoteGroupDef` インスタンス
+- 例外/注意：
+  - ノートグループ定義が見つからない場合、`KeyNotFoundException` を送出する
 
 ##### BelongsToAnyGroup
 
@@ -1770,16 +1899,16 @@ public bool BelongsToAnyGroup(NoteId noteId)
 - 戻り値：
   - `bool`：グループに所属している場合は `true`
 
-##### BelongsToAnyGroup
+##### FindBelongedNoteGroup
 
 ```csharp
-public bool BelongsToAnyGroup(string noteId)
+public NoteGroupDef? FindBelongedNoteGroup(NoteId noteId)
 ```
-- 役割：指定されたノートIDを持つノートがいずれかのグループに所属しているかどうかを返す
+- 役割：指定されたノートIDを持つノートが所属するノートグループ定義を探索する
 - 引数：
   - `noteId`：ノートID
 - 戻り値：
-  - `bool`：グループに所属している場合は `true`
+  - `NoteGroupDef?`：ノートが所属するノートグループ定義。見つからない場合は `null`
 
 ##### IsStartNoteInAnyGroup
 
@@ -1796,7 +1925,7 @@ public bool IsStartNoteInAnyGroup(string noteId)
 
 ### NoteDefIndex
 
-- 概要：ノート定義番号を保持するクラス（値オブジェクト）
+- 概要：ノート定義番号を保持するクラス
 - 利用方法：`new` で生成
 
 #### プロパティ
@@ -1816,7 +1945,7 @@ public NoteDefIndex(int value)
 - 引数：
   - `value`：ノート定義番号
 - 例外/注意：
-  - `value` が `0` 未満もしくは `35` より大きい場合、`ArgumentOutOfRangeException` を送出する
+  - `value` が `0` 未満もしくは `1295` より大きい場合、`ArgumentOutOfRangeException` を送出する
 
 #### メソッド
 
@@ -1836,8 +1965,8 @@ public NoteDefIndex(int value)
 
 | 名前            | 型              | アクセス | 内容           |
 | --------------- | --------------- | -------- | -------------- |
-| `PropertyKey`   | `PropertyKey`   | get      | プロパティキー |
-| `PropertyValue` | `PropertyValue` | get      | プロパティ値   |
+| `Key`           | `PropertyKey`   | get      | プロパティキー |
+| `Value`         | `PropertyValue` | get      | プロパティ値   |
 
 #### コンストラクタ
 
@@ -1862,6 +1991,9 @@ public Property(string key, string value)
 - 引数：
   - `key`：プロパティキー
   - `value`：プロパティ値
+- 例外/注意：
+  - `key` または `value` が `null`、空文字、空白のみの場合、`ArgumentException` を送出する
+  - `key` に半角スペースが含まれる場合、`ArgumentException` を送出する
 
 #### メソッド
 
@@ -1875,6 +2007,8 @@ public Property UpdateValue(PropertyValue value)
   - `value`：新しいプロパティ値
 - 戻り値：
   - `Property`：プロパティ値が更新された新しい `Property` インスタンス
+- 例外/注意：
+  - `value` が `null` の場合、`ArgumentNullException` を送出する
 
 ---
 
@@ -1901,8 +2035,8 @@ public PropertyKey(string value)
 - 引数：
   - `value`：プロパティキー値
 - 例外/注意：
-  - `value` が `null` / 空文字 / 空白のみの場合、`ArgumentException` を送出する
-  - `value` に空白が含まれる場合、`ArgumentException` を送出する
+  - `value` が `null`、空文字、空白のみの場合、`ArgumentException` を送出する
+  - `value` に半角スペースが含まれる場合、`ArgumentException` を送出する
 
 #### メソッド
 
@@ -1914,13 +2048,12 @@ public PropertyKey(string value)
 
 - 概要：プロパティ値を保持するクラス
 - 利用方法：`new` で生成
-- 実装：`IEquatable<PropertyValue>`
 
 #### プロパティ
 
 | 名前              | 型              | アクセス | 内容                                      |
 | ----------------- | --------------- | -------- | ----------------------------------------- |
-| `Empty`（Static） | `PropertyValue` | get      | 空の値を持つ `PropertyValue` インスタンス |
+| `Empty`（static） | `PropertyValue` | get      | 空の値を持つ `PropertyValue` インスタンス |
 
 #### コンストラクタ
 
@@ -1942,7 +2075,7 @@ public PropertyValue(string value)
 - 引数：
   - `value`：プロパティ値
 - 例外/注意：
-  - `value` が `null` / 空文字 / 空白のみの場合、`ArgumentException` を送出する
+  - `value` が `null`、空文字、空白のみの場合、`ArgumentException` を送出する
 
 #### メソッド
 
@@ -1971,6 +2104,8 @@ public int AsInt()
   - `int`：プロパティ値
 - 例外/注意：
   - インスタンスがプロパティ値を持っていない場合、`InvalidOperationException` を送出する
+  - 値を整数として解析できない場合、`InvalidCastException` を送出する
+  - 整数への変換にはインバリアントカルチャを使用する
 
 ##### AsFloat
 
@@ -1984,6 +2119,8 @@ public float AsFloat()
   - `float`：プロパティ値
 - 例外/注意：
   - インスタンスがプロパティ値を持っていない場合、`InvalidOperationException` を送出する
+  - 値を浮動小数点数として解析できない場合、`InvalidCastException` を送出する
+  - 浮動小数点数への変換にはインバリアントカルチャを使用する
 
 ##### AsBoolean
 
@@ -1997,6 +2134,7 @@ public bool AsBoolean()
   - `bool`：プロパティ値
 - 例外/注意：
   - インスタンスがプロパティ値を持っていない場合、`InvalidOperationException` を送出する
+  - 値を真偽値として解析できない場合、`InvalidCastException` を送出する
 
 ##### HasValue
 
@@ -2015,13 +2153,13 @@ public bool HasValue()
 
 - 概要：複数のプロパティをまとめて管理するクラス
 - 利用方法：`new` で生成
-- 実装：インデクサ（`public Property this[int index]`）
 
 #### プロパティ
 
-| 名前    | 型    | アクセス | 内容                   |
-| ------- | ----- | -------- | ---------------------- |
-| `Count` | `int` | get      | 保持するプロパティの数 |
+| 名前              | 型         | アクセス | 内容                         |
+| ----------------- | ---------- | -------- | ---------------------------- |
+| `this[int index]` | `Property` | get      | 指定された番号のプロパティ   |
+| `Count`           | `int`      | get      | 保持するプロパティの数       |
 
 #### コンストラクタ
 
@@ -2047,31 +2185,37 @@ public PropertyGroup(IReadOnlyList<Property> properties)
 
 #### メソッド
 
-##### MergeKeysAndValues（Static）
+##### MergeKeysAndValues（static）
 
 ```csharp
 public static PropertyGroup MergeKeysAndValues(IReadOnlyList<string> keys, IReadOnlyList<string> values)
 ```
-- 役割：キー配列と値配列から `PropertyGroup` を作成する
-  - それぞれの配列の番号同士が対応する
+- 役割：キーリストと値リストから `PropertyGroup` を作成する
+  - それぞれのリストの番号同士が対応する
 - 引数：
-  - `keys`：プロパティキー配列
-  - `values`：プロパティ値配列
+  - `keys`：プロパティキーリスト
+  - `values`：プロパティ値リスト
 - 戻り値：
   - `PropertyGroup`：作成されたインスタンス
 - 例外/注意：
+  - `keys` または `values` が `null` の場合、`ArgumentNullException` を送出する
   - `keys` と `values` の要素数が一致しない場合、 `ArgumentException` を送出する
+  - キーまたは値の要素が `null`、空文字、空白のみの場合、`ArgumentException` を送出する
+  - キーの要素に半角スペースが含まれる場合、`ArgumentException` を送出する
 
-##### CreateFromPropertyNames（Static）
+##### CreateFromPropertyNames（static）
 
 ```csharp
 public static PropertyGroup CreateFromPropertyNames(IReadOnlyList<string> propertyNames)
 ```
-- 役割：キーの配列から値を持たないプロパティグループを作成する
+- 役割：キーのリストから値を持たないプロパティグループを作成する
 - 引数：
-  - `propertyNames`：キーの配列
+  - `propertyNames`：キーのリスト
 - 戻り値：
   - `PropertyGroup`：作成されたインスタンス
+- 例外/注意：
+  - `propertyNames` が `null` の場合、`NullReferenceException` を送出する
+  - 要素が `null`、空文字、空白のみの場合、または半角スペースを含む場合、`ArgumentException` を送出する
 
 ##### GetPropertyByKey
 
@@ -2084,7 +2228,8 @@ public Property GetPropertyByKey(string key)
 - 戻り値：
   - `Property`：キーに対応する `Property` インスタンス
 - 例外/注意：
-  - `key` に対応する `Property` インスタンスが存在しない場合、 `ArgumentException` を送出する
+  - `key` が `null`、空文字、空白のみの場合、または半角スペースを含む場合、`ArgumentException` を送出する
+  - `key` に対応する `Property` インスタンスが存在しない場合、`KeyNotFoundException` を送出する
 
 ##### GetPropertyByKey
 
@@ -2097,7 +2242,8 @@ public Property GetPropertyByKey(PropertyKey key)
 - 戻り値：
   - `Property`：キーに対応する `Property` インスタンス
 - 例外/注意：
-  - `key` に対応する `Property` インスタンスが存在しない場合、 `ArgumentException` を送出する
+  - `key` が `null` の場合、`NullReferenceException` を送出する
+  - `key` に対応する `Property` インスタンスが存在しない場合、`KeyNotFoundException` を送出する
 
 ##### HasKey
 
@@ -2109,6 +2255,8 @@ public bool HasKey(string key)
   - `key`：検索するキー
 - 戻り値：
   - `bool`：キーに対応するプロパティが存在するかどうか
+- 例外/注意：
+  - `key` が `null`、空文字、空白のみの場合、または半角スペースを含む場合、`ArgumentException` を送出する
 
 ##### HasKey
 
@@ -2120,6 +2268,8 @@ public bool HasKey(PropertyKey key)
   - `key`：検索するキー
 - 戻り値：
   - `bool`：キーに対応するプロパティが存在するかどうか
+- 例外/注意：
+  - `key` が `null` の場合、`ArgumentNullException` を送出する
 
 ##### AllPropertiesHasValue
 
@@ -2141,9 +2291,11 @@ public PropertyGroup AddOrUpdateProperty(Property property)
   - 同一キーを持つプロパティが存在しない場合、プロパティを追加する
   - 同一キーを持つプロパティがすでに存在している場合、そのプロパティの値を更新する
 - 引数：
-  - `property`：追加/更新するプロパティ
+  - `property`：追加または更新するプロパティ
 - 戻り値：
   - `PropertyGroup`：プロパティが更新された `PropertyGroup` インスタンス
+- 例外/注意：
+  - `property` が `null` の場合、`ArgumentNullException` を送出する
 
 ##### AddOrUpdateProperties
 
@@ -2154,9 +2306,12 @@ public PropertyGroup AddOrUpdateProperties(IReadOnlyList<Property> properties)
   - 同一キーを持つプロパティが存在しない場合、プロパティを追加する
   - 同一キーを持つプロパティがすでに存在している場合、そのプロパティの値を更新する
 - 引数：
-  - `properties`：追加/更新するプロパティリスト
+  - `properties`：追加または更新するプロパティリスト
 - 戻り値：
   - `PropertyGroup`：プロパティが更新された `PropertyGroup` インスタンス
+- 例外/注意：
+  - `properties` が `null` の場合、`ArgumentNullException` を送出する
+  - `properties` に `null` の要素が含まれる場合、`NullReferenceException` を送出する
 
 ##### GetPropertyValueList
 
@@ -2168,20 +2323,24 @@ public IReadOnlyList<string> GetPropertyValueList()
   - なし
 - 戻り値：
   - `IReadOnlyList<string>`：プロパティ値文字列のリスト
+- 例外/注意：
+  - 値を持たないプロパティが含まれる場合、`InvalidOperationException` を送出する
+
+---
 
 ### ChartPropertyGroup
 
 - 概要：譜面が持つプロパティを管理するクラス
   - `PropertyGroup` クラスのラッパークラス
 - 利用方法：`new` で生成
-- 実装：インデクサ（`public Property this[int index]`）
 
 #### プロパティ
 
-| 名前            | 型              | アクセス | 内容                   |
-| --------------- | --------------- | -------- | ---------------------- |
-| `Count`         | `int`           | get      | 保持するプロパティの数 |
-| `PropertyGroup` | `PropertyGroup` | get      | プロパティグループ     |
+| 名前              | 型              | アクセス | 内容                         |
+| ----------------- | --------------- | -------- | ---------------------------- |
+| `this[int index]` | `Property`      | get      | 指定された番号のプロパティ   |
+| `Count`           | `int`           | get      | 保持するプロパティの数       |
+| `PropertyGroup`   | `PropertyGroup` | get      | プロパティグループ           |
 
 #### コンストラクタ
 
@@ -2208,6 +2367,9 @@ public Property GetPropertyByKey(string key)
   - `key`：検索するキー
 - 戻り値：
   - `Property`：キーに対応する `Property` インスタンス
+- 例外/注意：
+  - `key` が `null`、空文字、空白のみの場合、または半角スペースを含む場合、`ArgumentException` を送出する
+  - `key` に対応する `Property` インスタンスが存在しない場合、`KeyNotFoundException` を送出する
 
 ##### GetGameId
 
@@ -2219,6 +2381,9 @@ public string GetGameId()
   - なし
 - 戻り値：
   - `string`：ゲームID
+- 例外/注意：
+  - `GameID` プロパティが存在しない場合、`KeyNotFoundException` を送出する
+  - `GameID` プロパティが値を持たない場合、`InvalidOperationException` を送出する
 
 ##### GetTpb
 
@@ -2230,8 +2395,10 @@ public Tpb GetTpb()
   - なし
 - 戻り値：
   - `Tpb`：TPB
+- 例外/注意：
+  - `TicksPerBeat` プロパティが存在しない場合、`KeyNotFoundException` を送出する
+  - `TicksPerBeat` プロパティが値を持たない場合、`InvalidOperationException` を送出する
+  - 値を整数として解析できない場合、`InvalidCastException` を送出する
+  - 値が `0` 以下の場合、`ArgumentOutOfRangeException` を送出する
 
 ---
-
-## 3. 変更履歴
-- 2026-02-17: 初版作成

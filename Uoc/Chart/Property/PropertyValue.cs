@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 
 namespace Uoc.Chart.Property
 {
@@ -42,7 +43,7 @@ namespace Uoc.Chart.Property
         public int AsInt()
         {
             if (!HasValue()) throw new InvalidOperationException("プロパティは値を持っていません。");
-            if (int.TryParse(value, out int result))
+            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int result))
             {
                 return result;
             }
@@ -56,7 +57,7 @@ namespace Uoc.Chart.Property
         public float AsFloat()
         {
             if (!HasValue()) throw new InvalidOperationException("プロパティは値を持っていません。");
-            if (float.TryParse(value, out float result))
+            if (float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out float result))
             {
                 return result;
             }

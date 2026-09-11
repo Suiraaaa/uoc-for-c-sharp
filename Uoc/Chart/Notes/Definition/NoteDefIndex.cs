@@ -12,7 +12,7 @@ namespace Uoc.Chart.Notes.Definition
     /// </summary>
     public class NoteDefIndex
     {
-        private const int MAX_INDEX = 35; // Base36の一桁で表せる最大数
+        private const int MAX_INDEX = 1295; // Base36の二桁で表せる最大数
 
         private readonly int value;
 

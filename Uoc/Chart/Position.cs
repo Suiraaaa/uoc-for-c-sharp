@@ -74,25 +74,34 @@ namespace Uoc.Chart
         /// <param name="quarterNoteCount">譜面位置までの四分音符の数</param>
         /// <param name="measureLengthProvider">小節長プロバイダ</param>
         /// <returns>Positionインスタンス</returns>
+        /// <exception cref="ArgumentOutOfRangeException">quarterNoteCountが有限の非負値でない場合、または位置をintの範囲内の分数で表せない場合にスローされます。</exception>
         public static Position CreateFromQuarterNotesCount(float quarterNoteCount, MeasureLengthProvider measureLengthProvider)
         {
+            if (float.IsNaN(quarterNoteCount) || float.IsInfinity(quarterNoteCount) || quarterNoteCount < 0) throw new ArgumentOutOfRangeException(nameof(quarterNoteCount));
+            if (measureLengthProvider == null) throw new ArgumentNullException(nameof(measureLengthProvider));
+
             var remainingQuarterNotesCount = quarterNoteCount;
             var measureIndex = 0;
 
             // どの小節に属するかを判定
-            while (remainingQuarterNotesCount >= measureLengthProvider.GetMeasureLengthAt(measureIndex).GetQuarterNoteCount())
+            var measureQuarterNoteCount = measureLengthProvider.GetMeasureLengthAt(measureIndex).GetQuarterNoteCount();
+            while (remainingQuarterNotesCount >= measureQuarterNoteCount)
             {
-                remainingQuarterNotesCount -= measureLengthProvider.GetMeasureLengthAt(measureIndex).GetQuarterNoteCount();
+                remainingQuarterNotesCount -= measureQuarterNoteCount;
                 measureIndex++;
+                measureQuarterNoteCount = measureLengthProvider.GetMeasureLengthAt(measureIndex).GetQuarterNoteCount();
             }
 
-            var numerator = remainingQuarterNotesCount / measureLengthProvider.GetMeasureLengthAt(measureIndex).GetQuarterNoteCount();
+            var numerator = remainingQuarterNotesCount / measureQuarterNoteCount;
             var denominator = 1;
 
-            // FIXME: 浮動小数点の丸め誤差により無限ループに陥る可能性がある
             // 小数がなくなるまで10倍する（Positionのコンストラクタ内で約分されます）
             while (numerator % 1 != 0)
             {
+                if (denominator > int.MaxValue / 10)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(quarterNoteCount), "譜面位置をintの範囲内の分数で表すことができません。");
+                }
                 numerator *= 10;
                 denominator *= 10;
             }
@@ -212,10 +221,15 @@ namespace Uoc.Chart
         {
             if (other == null) throw new ArgumentNullException(nameof(other));
 
-            // FIXME: 比較する位置の小節長が異なる場合は正確な比較ができない
-            var scale = measureIndex.Value + Position01;
-            var otherScale = other.measureIndex.Value + other.Position01;
-            return scale.CompareTo(otherScale);
+            var measureComparison = measureIndex.Value.CompareTo(other.measureIndex.Value);
+            if (measureComparison != 0)
+            {
+                return measureComparison;
+            }
+
+            var scaledActiveIndex = (long)activeIndex * other.sectionCount;
+            var otherScaledActiveIndex = (long)other.activeIndex * sectionCount;
+            return scaledActiveIndex.CompareTo(otherScaledActiveIndex);
         }
 
         public override int GetHashCode()
