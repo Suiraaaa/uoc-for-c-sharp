@@ -4,8 +4,8 @@
 
 ## リファレンス
 
-- README: （準備中）
-- UOCフォーマット仕様: https://gist.github.com/Suiraaaa/188f4ec0639fde9834d7cb7ef057bf2c
+- [README](README.md)
+- [UOCフォーマット仕様](https://gist.github.com/Suiraaaa/188f4ec0639fde9834d7cb7ef057bf2c)
 
 ---
 
@@ -24,7 +24,6 @@
     - [2.3.1 Uoc.Analyze.Playback](#231-uocanalyzeplayback)
       - [ChartPlaybackData](#chartplaybackdata)
       - [NotePlaybackProvider](#noteplaybackprovider)
-      - [NotePlaybackProviderCollection](#noteplaybackprovidercollection)
       - [NoteGroupPlaybackProvider](#notegroupplaybackprovider)
     - [2.3.2 Uoc.Analyze.Speed](#232-uocanalyzespeed)
       - [BasicSpeed](#basicspeed)
@@ -67,7 +66,6 @@
       - [PropertyValue](#propertyvalue)
       - [PropertyGroup](#propertygroup)
       - [ChartPropertyGroup](#chartpropertygroup)
-- [3. 変更履歴](#3-変更履歴)
 
 ---
 
@@ -81,6 +79,9 @@
 ---
 
 ## 2. 公開API仕様
+
+本章では、各型がオーバーライドする `Equals(object)`、`GetHashCode()`、および等価演算子を省略する。
+実装するインターフェースと、ライブラリ固有の公開メンバーを記載する。
 
 ## 2.1 Uoc
 
@@ -120,7 +121,7 @@ public ChartPlaybackData CreateChartPlaybackData(AnalysisSetting analysisSetting
 
 ### UocString
 
-- 概要：UOC文字列を保持するクラス（値オブジェクト）
+- 概要：UOC文字列を保持するクラス
 - 利用方法：`new` で生成
 
 #### プロパティ
@@ -364,6 +365,7 @@ public float CalculateNotePosition(long timing)
 
 - 概要：ノートの基本移動速度を保持するクラス（値オブジェクト）
 - 利用方法：`new` で生成
+- 実装：`IEquatable<BasicSpeed>`
 
 #### プロパティ
 
@@ -458,6 +460,13 @@ public Bpm(float value)
 - 概要：レイヤー情報を保持するクラス（値オブジェクト）
 - 利用方法：`new` で生成
 - 実装：`IEquatable<Layer>`
+
+#### 定数
+
+| 名前            | 型    | 値   | 内容                 |
+| --------------- | ----- | ---- | -------------------- |
+| `MinLayerValue` | `int` | `0`  | レイヤー値の最小値   |
+| `MaxLayerValue` | `int` | `30` | レイヤー値の最大値   |
 
 #### プロパティ
 
@@ -571,7 +580,6 @@ public Tpb(int value)
 | 名前                     | 型             | アクセス | 内容                                   |
 | ------------------------ | -------------- | -------- | -------------------------------------- |
 | `ChartStart`（Static）   | `Position`     | get      | 譜面の始点を表す位置                   |
-| `MeasureStart`（Static） | `Position`     | get      | 引数で指定された小節内の始点を表す位置 |
 | `MeasureIndex`           | `MeasureIndex` | get      | 小節番号                               |
 | `Position01`             | `float`        | get      | 小節内での位置を 0~1 で表した値        |
 | `SectionCount`           | `int`          | get      | 小節のセクション数                     |
@@ -595,6 +603,17 @@ public Position(MeasureIndex measureIndex, int sectionCount, int activeIndex)
   - `activeIndex` が `sectionCount` 以上の場合、`ArgumentOutOfRangeException` を送出する
 
 #### メソッド
+
+##### MeasureStart（Static）
+
+```csharp
+public static Position MeasureStart(MeasureIndex measureIndex)
+```
+- 役割：指定された小節内の始点を表す `Position` を作成する
+- 引数：
+  - `measureIndex`：小節番号
+- 戻り値：
+  - `Position`：指定された小節内の始点
 
 ##### CreateFromQuarterNotesCount（Static）
 
@@ -692,6 +711,23 @@ public float GetTotalQuarterNoteCount(MeasureLengthProvider measureLengthProvide
 - 戻り値：
   - `float`：譜面位置までの四分音符の数
 
+##### CompareTo
+
+```csharp
+public int CompareTo(Position? other)
+```
+- 役割：この位置と指定された位置の前後関係を比較する
+- 引数：
+  - `other`：比較対象の位置
+- 戻り値：
+  - `int`：この位置が前なら負数、同じなら `0`、後なら正数
+- 例外/注意：
+  - `other` が `null` の場合、`ArgumentNullException` を送出する
+
+#### 演算子
+
+`>`、`<`、`>=`、`<=` により、2つの `Position` の前後関係を比較できる。
+
 ---
 
 ### Distance
@@ -787,7 +823,6 @@ public MeasureIndex(int value)
 - 概要：小節長情報を保持するクラス
   - 分子は小節内の拍数、分母は1拍に相当する音符の種類を示す
 - 利用方法：`new` で生成
-- 実装：`IEquatable<MeasureLength>`
 
 #### プロパティ
 
@@ -963,7 +998,9 @@ public MeasureLength GetMeasureLengthAt(int measureIndex)
 ### MeasureLengthChangeEvent
 
 - 概要：単体の小節長変動イベントを表すクラス
-- 利用方法：`MeasureLengthProvider` 経由で取得（new は不可）
+- 利用方法：
+  - `new` で生成
+  - `MeasureLengthProvider` 経由で取得
 
 #### プロパティ
 
@@ -974,7 +1011,15 @@ public MeasureLength GetMeasureLengthAt(int measureIndex)
 
 #### コンストラクタ
 
-- なし
+##### MeasureLengthChangeEvent
+
+```csharp
+public MeasureLengthChangeEvent(Position position, MeasureLength measureLength)
+```
+- 役割：小節長変動イベントを生成する
+- 引数：
+  - `position`：イベントの位置
+  - `measureLength`：適用する小節長
 
 #### メソッド
 
@@ -1030,7 +1075,9 @@ public IReadOnlyList<SpeedMultiplierChangeEvent> GetSpeedMultiplierChangeEventsA
 ### SpeedMultiplierChangeEvent
 
 - 概要：単体のスピード倍率変動イベントを表すクラス
-- 利用方法：`SpeedMultiplierProvider` 経由で取得（new は不可）
+- 利用方法：
+  - `new` で生成
+  - `SpeedMultiplierProvider` 経由で取得
 
 #### プロパティ
 
@@ -1043,7 +1090,18 @@ public IReadOnlyList<SpeedMultiplierChangeEvent> GetSpeedMultiplierChangeEventsA
 
 #### コンストラクタ
 
-- なし
+##### SpeedMultiplierChangeEvent
+
+```csharp
+public SpeedMultiplierChangeEvent(Position position, Layer layer, SpeedMultiplier speedMultiplier, MeasureLengthProvider measureLengthProvider, Tpb tpb)
+```
+- 役割：スピード倍率変動イベントを生成する
+- 引数：
+  - `position`：イベントの位置
+  - `layer`：イベントを適用するレイヤー
+  - `speedMultiplier`：適用するスピード倍率
+  - `measureLengthProvider`：小節長プロバイダ
+  - `tpb`：TPB（一拍の分解能）
 
 #### メソッド
 
@@ -1338,7 +1396,19 @@ public NoteGroupProfile(NoteGroupDef noteGroupDef, IReadOnlyList<NoteProfile> be
 - 引数：
   - `noteGroupDef`：ノートグループ定義
   - `belongsNotes`：グループに所属するノーツ
-  - `guid`ノートグループのGuid
+  - `guid`：ノートグループのGUID
+- 例外/注意：
+  - `noteGroupDef` または `belongsNotes` が `null` の場合、`ArgumentNullException` を送出する
+
+##### NoteGroupProfile
+
+```csharp
+public NoteGroupProfile(NoteGroupDef noteGroupDef, IReadOnlyList<NoteProfile> belongsNotes)
+```
+- 役割：ノートグループを構成する情報からインスタンスを生成する
+- 引数：
+  - `noteGroupDef`：ノートグループ定義
+  - `belongsNotes`：グループに所属するノーツ
 - 例外/注意：
   - いずれかの引数が `null` の場合、`ArgumentNullException` を送出する
   - ランダムな `Guid` が新規に生成される
@@ -1370,14 +1440,14 @@ public NoteGroupProfile(NoteGroupDef noteGroupDef, IReadOnlyList<NoteProfile> be
 ##### GetNoteGroupProfileByGuid
 
 ```csharp
-public NoteGroupProfile GetNoteGroupProfileByGuid(Guid guid)
+public NoteGroupProfile? GetNoteGroupProfileByGuid(Guid guid)
 ```
 - 役割：指定された `Guid` を持つ `NoteGroupProfile` を探索して返す
   - ただし見つからなかった場合は `null` を返す
 - 引数：
   - `guid`：探索するノートGUID
 - 戻り値：
-  - `NoteGroupProfile`：指定された `Guid` を持つ `NoteGroupProfile` インスタンス
+  - `NoteGroupProfile?`：指定された `Guid` を持つ `NoteGroupProfile`。見つからない場合は `null`
 
 ##### TryGetNoteBelongingGroup
 
@@ -1461,7 +1531,7 @@ public NoteGroupId(string value)
 
 - 概要：ノートのチャンネルを保持するクラス（値オブジェクト）
 - 利用方法：`new` で生成
-- 実装：`IEquatable<Channel>`
+- 実装：`IEquatable<Channel?>`
 
 #### プロパティ
 
@@ -1755,11 +1825,11 @@ public NoteGroupDef GetNoteGroupDefById(string noteGroupId)
 ##### GetNoteGroupDefByStartNoteId
 
 ```csharp
-public NoteGroupDef GetNoteGroupDefByStartNoteId(NoteId noteId)
+public NoteGroupDef GetNoteGroupDefByStartNoteId(NoteId startNoteId)
 ```
 - 役割：始点ノートIDからノートグループ定義を取得する
 - 引数：
-  - `noteId`：始点ノートID
+  - `startNoteId`：始点ノートID
 - 戻り値：
   - `NoteGroupDef`：始点ノートが指定されたノートIDを持つ `NoteGroupDef` インスタンス
 
@@ -1774,16 +1844,16 @@ public bool BelongsToAnyGroup(NoteId noteId)
 - 戻り値：
   - `bool`：グループに所属している場合は `true`
 
-##### BelongsToAnyGroup
+##### FindBelongedNoteGroup
 
 ```csharp
-public bool BelongsToAnyGroup(string noteId)
+public NoteGroupDef? FindBelongedNoteGroup(NoteId noteId)
 ```
-- 役割：指定されたノートIDを持つノートがいずれかのグループに所属しているかどうかを返す
+- 役割：指定されたノートIDを持つノートが所属するノートグループ定義を探索する
 - 引数：
   - `noteId`：ノートID
 - 戻り値：
-  - `bool`：グループに所属している場合は `true`
+  - `NoteGroupDef?`：ノートが所属するノートグループ定義。見つからない場合は `null`
 
 ##### IsStartNoteInAnyGroup
 
@@ -1800,7 +1870,7 @@ public bool IsStartNoteInAnyGroup(string noteId)
 
 ### NoteDefIndex
 
-- 概要：ノート定義番号を保持するクラス（値オブジェクト）
+- 概要：ノート定義番号を保持するクラス
 - 利用方法：`new` で生成
 
 #### プロパティ
@@ -1840,8 +1910,8 @@ public NoteDefIndex(int value)
 
 | 名前            | 型              | アクセス | 内容           |
 | --------------- | --------------- | -------- | -------------- |
-| `PropertyKey`   | `PropertyKey`   | get      | プロパティキー |
-| `PropertyValue` | `PropertyValue` | get      | プロパティ値   |
+| `Key`           | `PropertyKey`   | get      | プロパティキー |
+| `Value`         | `PropertyValue` | get      | プロパティ値   |
 
 #### コンストラクタ
 
@@ -1918,7 +1988,6 @@ public PropertyKey(string value)
 
 - 概要：プロパティ値を保持するクラス
 - 利用方法：`new` で生成
-- 実装：`IEquatable<PropertyValue>`
 
 #### プロパティ
 
@@ -2019,13 +2088,13 @@ public bool HasValue()
 
 - 概要：複数のプロパティをまとめて管理するクラス
 - 利用方法：`new` で生成
-- 実装：インデクサ（`public Property this[int index]`）
 
 #### プロパティ
 
-| 名前    | 型    | アクセス | 内容                   |
-| ------- | ----- | -------- | ---------------------- |
-| `Count` | `int` | get      | 保持するプロパティの数 |
+| 名前              | 型         | アクセス | 内容                         |
+| ----------------- | ---------- | -------- | ---------------------------- |
+| `this[int index]` | `Property` | get      | 指定された番号のプロパティ   |
+| `Count`           | `int`      | get      | 保持するプロパティの数       |
 
 #### コンストラクタ
 
@@ -2178,14 +2247,14 @@ public IReadOnlyList<string> GetPropertyValueList()
 - 概要：譜面が持つプロパティを管理するクラス
   - `PropertyGroup` クラスのラッパークラス
 - 利用方法：`new` で生成
-- 実装：インデクサ（`public Property this[int index]`）
 
 #### プロパティ
 
-| 名前            | 型              | アクセス | 内容                   |
-| --------------- | --------------- | -------- | ---------------------- |
-| `Count`         | `int`           | get      | 保持するプロパティの数 |
-| `PropertyGroup` | `PropertyGroup` | get      | プロパティグループ     |
+| 名前              | 型              | アクセス | 内容                         |
+| ----------------- | --------------- | -------- | ---------------------------- |
+| `this[int index]` | `Property`      | get      | 指定された番号のプロパティ   |
+| `Count`           | `int`           | get      | 保持するプロパティの数       |
+| `PropertyGroup`   | `PropertyGroup` | get      | プロパティグループ           |
 
 #### コンストラクタ
 
