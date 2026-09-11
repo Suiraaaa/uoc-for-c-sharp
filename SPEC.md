@@ -1163,7 +1163,7 @@ public NoteProfile(NoteDef noteDef, Position position, IReadOnlyList<string> pro
   - `channel`：チャンネル
   - `guid`：ノートのGUID
 - 例外/注意：
-  - いずれかの引数が `null` の場合、`ArgumentNullException` を送出する
+  - `noteDef`、`position`、`propertyValues`、`layer`、`channel` のいずれかが `null` の場合、`ArgumentNullException` を送出する
 
 ##### NoteProfile
 
@@ -1698,7 +1698,7 @@ public NoteDef(NoteId noteId, IReadOnlyList<string> propertyNames)
   - `noteId`：ノートID
   - `propertyNames`：ノートプロパティ名のリスト
 - 例外/注意：
-  - `noteDef`、`position`、`propertyValues`、`layer`、`channel` のいずれかが `null` の場合、`ArgumentNullException` を送出する
+  - `noteId` または `propertyNames` が `null` の場合、`ArgumentNullException` を送出する
 
 #### メソッド
 
