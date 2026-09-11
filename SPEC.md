@@ -1480,7 +1480,7 @@ public Channel(int value)
 - 引数：
   - `value`：ノートのチャンネル
 - 例外/注意：
-  - `value` が `0` 未満もしくは `1224` より大きい場合、`ArgumentOutOfRangeException` を送出する
+  - `value` が `0` 未満もしくは `1295` より大きい場合、`ArgumentOutOfRangeException` を送出する
 
 #### メソッド
 
@@ -1818,7 +1818,7 @@ public NoteDefIndex(int value)
 - 引数：
   - `value`：ノート定義番号
 - 例外/注意：
-  - `value` が `0` 未満もしくは `35` より大きい場合、`ArgumentOutOfRangeException` を送出する
+  - `value` が `0` 未満もしくは `1295` より大きい場合、`ArgumentOutOfRangeException` を送出する
 
 #### メソッド
 
