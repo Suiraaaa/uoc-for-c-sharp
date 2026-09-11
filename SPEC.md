@@ -176,6 +176,8 @@ public static UocObject Parse(UocString uocString)
   - `uocString`：UOC文字列
 - 戻り値：
   - `UocObject`：作成された `UocObject`
+- 例外/注意：
+  - `uocString` が `null` の場合、`ArgumentNullException` を送出する
 
 ---
 
@@ -209,6 +211,10 @@ public static UocString Build(string editorName, ChartPropertyGroup chartPropert
   - `noteProfileCollection`：ノートプロファイルコレクション
 - 戻り値：
   - `UocString`：作成された `UocString`
+- 例外/注意：
+  - `editorName` が `null`、空文字、空白のみの場合、`ArgumentException` を送出する
+  - そのほかの引数が `null` の場合、`ArgumentNullException` を送出する
+  - ノートの小節番号が `46655` より大きい場合、`ArgumentOutOfRangeException` を送出する
 
 ---
 
@@ -227,7 +233,7 @@ public static UocString Build(string editorName, ChartPropertyGroup chartPropert
 | `MinimumTiming`                    | `long`       | get      | 譜面の最小タイミング                           |
 | `IgnoreSpeedChangesAfterJudgeLine` | `bool`       | get      | 判定ライン以降のスピード変動を無視するかどうか |
 | `NotesInstantiationInterval`       | `int`        | get      | ノート生成タイミングの間隔(ミリ秒)             |
-> 各プロパティの詳細な挙動はプログラム中のコメントを参照してください
+`IgnoreSpeedChangesAfterJudgeLine` が `true` の場合、判定ライン通過後は速度倍率を `1` に固定する。
 
 #### コンストラクタ
 
@@ -278,7 +284,7 @@ public AnalysisSetting(BasicSpeed basicSpeed, long minimumTiming, bool ignoreSpe
 public IReadOnlyList<NotePlaybackProvider> GetSingleNotePlaybackProviders()
 ```
 - 役割：単体ノートの再生プロバイダのリストを取得する
-  - いずれかのグループに所属するノートは含まれない
+  - ノートIDがいずれかのノートグループ定義に含まれるノートは除外される
   - 生成タイミングで昇順
 - 引数：
   - なし
@@ -333,6 +339,7 @@ public float CalculateNotePosition(long timing)
     - ノート生成位置を1、判定位置を0とする
     - 対象レイヤーの速度倍率0では停止し、負数では逆方向へ移動する
     - 速度倍率が正の場合、判定位置を通過した後は負の値をとる
+    - `IgnoreSpeedChangesAfterJudgeLine` が `true` の場合、判定ライン通過後は速度倍率を `1` として計算する
 
 ---
 
@@ -581,7 +588,7 @@ public Tpb(int value)
 | ------------------------ | -------------- | -------- | -------------------------------------- |
 | `ChartStart`（Static）   | `Position`     | get      | 譜面の始点を表す位置                   |
 | `MeasureIndex`           | `MeasureIndex` | get      | 小節番号                               |
-| `Position01`             | `float`        | get      | 小節内での位置を 0~1 で表した値        |
+| `Position01`             | `float`        | get      | 小節内での位置を0以上1未満で表した値   |
 | `SectionCount`           | `int`          | get      | 小節のセクション数                     |
 | `ActiveIndex`            | `int`          | get      | 有効セクション位置（0始まり）          |
 
@@ -598,9 +605,11 @@ public Position(MeasureIndex measureIndex, int sectionCount, int activeIndex)
   - `sectionCount`：小節のセクション数
   - `activeIndex`：有効セクション位置（0始まり）
 - 例外/注意：
+  - `measureIndex` が `null` の場合、`ArgumentNullException` を送出する
   - `sectionCount` が `1` 未満の場合、`ArgumentOutOfRangeException` を送出する
   - `activeIndex` が `0` 未満の場合、`ArgumentOutOfRangeException` を送出する
   - `activeIndex` が `sectionCount` 以上の場合、`ArgumentOutOfRangeException` を送出する
+  - `sectionCount` と `activeIndex` は生成時に約分される
 
 #### メソッド
 
@@ -614,6 +623,8 @@ public static Position MeasureStart(MeasureIndex measureIndex)
   - `measureIndex`：小節番号
 - 戻り値：
   - `Position`：指定された小節内の始点
+- 例外/注意：
+  - `measureIndex` が `null` の場合、`ArgumentNullException` を送出する
 
 ##### CreateFromQuarterNotesCount（Static）
 
@@ -627,7 +638,8 @@ public static Position CreateFromQuarterNotesCount(float quarterNoteCount, Measu
 - 戻り値：
   - `Position`：作成された `Position` インスタンス
 - 例外/注意：
-  - `quarterNoteCount`が有限の非負値でない場合、または位置を`int`の範囲内の分数で表せない場合、`ArgumentOutOfRangeException`を送出する
+  - `quarterNoteCount` が有限の非負値でない場合、または位置を `int` の範囲内の分数で表せない場合、`ArgumentOutOfRangeException` を送出する
+  - `measureLengthProvider` が `null` の場合、`ArgumentNullException` を送出する
 
 ##### IsMeasureStart
 
@@ -723,6 +735,7 @@ public int CompareTo(Position? other)
   - `int`：この位置が前なら負数、同じなら `0`、後なら正数
 - 例外/注意：
   - `other` が `null` の場合、`ArgumentNullException` を送出する
+  - 小節番号を先に比較し、同一小節内では位置を分数のまま比較する
 
 #### 演算子
 
@@ -1020,6 +1033,9 @@ public MeasureLengthChangeEvent(Position position, MeasureLength measureLength)
 - 引数：
   - `position`：イベントの位置
   - `measureLength`：適用する小節長
+- 例外/注意：
+  - `position` または `measureLength` が `null` の場合、`ArgumentNullException` を送出する
+  - `position` が小節の始点でない場合、`ArgumentException` を送出する
 
 #### メソッド
 
@@ -1055,6 +1071,8 @@ public SpeedMultiplier GetMeasureStartSpeedMultiplier(int measureIndex, Layer la
   - `layer`：検索対象レイヤー
 - 戻り値：
   - `SpeedMultiplier`：指定された小節の始点スピード倍率
+- 例外/注意：
+  - `measureIndex` が `0` 未満の場合、`ArgumentOutOfRangeException` を送出する
 
 ##### GetSpeedMultiplierChangeEventsAt
 
@@ -1069,6 +1087,9 @@ public IReadOnlyList<SpeedMultiplierChangeEvent> GetSpeedMultiplierChangeEventsA
   - `layer`：検索対象レイヤー
 - 戻り値：
   - `IReadOnlyList<SpeedMultiplierChangeEvent>`：指定された小節範囲内のスピード変動イベントリスト
+- 例外/注意：
+  - `startMeasureIndex` または `endMeasureIndex` が `0` 未満の場合、`ArgumentOutOfRangeException` を送出する
+  - `startMeasureIndex` が `endMeasureIndex` より大きい場合、`ArgumentException` を送出する
 
 ---
 
@@ -1102,6 +1123,8 @@ public SpeedMultiplierChangeEvent(Position position, Layer layer, SpeedMultiplie
   - `speedMultiplier`：適用するスピード倍率
   - `measureLengthProvider`：小節長プロバイダ
   - `tpb`：TPB（一拍の分解能）
+- 例外/注意：
+  - いずれかの引数が `null` の場合、`ArgumentNullException` を送出する
 
 #### メソッド
 
@@ -1159,7 +1182,7 @@ public NoteProfile(NoteDef noteDef, Position position, IReadOnlyList<string> pro
   - `layer`：レイヤー
   - `channel`：チャンネル
 - 例外/注意：
-  - いずれかの引数が `null` の場合、`ArgumentNullException` を送出する
+  - `noteDef`、`position`、`propertyValues`、`layer`、`channel` のいずれかが `null` の場合、`ArgumentNullException` を送出する
   - ランダムな `Guid` が新規に生成される
 
 #### メソッド
@@ -1174,6 +1197,9 @@ public NoteProfile UpdatePosition(Position position)
   - `position`：新しいノート位置
 - 戻り値：
   - `NoteProfile`：ノート位置が更新された新しい `NoteProfile` インスタンス
+- 例外/注意：
+  - 元のノートのGUIDを維持する
+  - `position` が `null` の場合、`ArgumentNullException` を送出する
 
 ##### UpdatePropertyGroup
 
@@ -1185,6 +1211,10 @@ public NoteProfile UpdatePropertyGroup(PropertyGroup propertyGroup)
   - `propertyGroup`：新しいプロパティグループ
 - 戻り値：
   - `NoteProfile`：プロパティグループが更新された新しい `NoteProfile` インスタンス
+- 例外/注意：
+  - 元のノートのGUIDを維持する
+  - プロパティ値は元の `NoteDef.PropertyNames` の順序へ割り当て直される
+  - `propertyGroup` が `null` の場合、`NullReferenceException` を送出する
 
 
 ##### UpdateChannel
@@ -1197,6 +1227,9 @@ public NoteProfile UpdateChannel(Channel channel)
   - `channel`：新しいチャンネル
 - 戻り値：
   - `NoteProfile`：チャンネルが更新された新しい `NoteProfile` インスタンス
+- 例外/注意：
+  - 元のノートのGUIDを維持する
+  - `channel` が `null` の場合、`ArgumentNullException` を送出する
 
 ---
 
@@ -1240,6 +1273,7 @@ public NoteGroupProfileCollection CreateNoteGroupProfileCollection(NoteGroupDefC
 ```
 - 役割：保持するノーツ情報から `NoteGroupProfileCollection` を作成する 
   - ただし一度作成された `NoteGroupProfileCollection` インスタンスはキャッシュされ、以後はそれを返却する
+  - 2回目以降に渡された `noteGroupDefCollection` は使用されない
 - 引数：
   - `noteGroupDefCollection`：ノートグループ定義コレクション
 - 戻り値：
@@ -1255,7 +1289,7 @@ public NoteProfile? GetNoteProfileByGuid(Guid guid)
 - 引数：
   - `guid`：探索するノートGUID
 - 戻り値：
-  - `NoteProfile`：指定された `Guid` を持つ `NoteProfile` インスタンス
+  - `NoteProfile?`：指定された `Guid` を持つ `NoteProfile`。見つからない場合は `null`
 
 ##### PutOrReplace
 
@@ -1323,6 +1357,8 @@ public MeasureIndex GetMaxMeasureIndex()
   - なし
 - 戻り値：
   - `MeasureIndex`：譜面の最大小節番号
+- 例外/注意：
+  - ノートを保持していない場合、`InvalidOperationException` を送出する
 
 ##### CreateEventProviders
 
@@ -1345,6 +1381,8 @@ public MeasureLengthProvider CreateMeasureLengthProvider()
   - なし
 - 戻り値：
   - `MeasureLengthProvider`：小節長プロバイダ
+- 例外/注意：
+  - 小節長変更ノートが存在しない場合、または譜面始点に存在しない場合、`ArgumentException` を送出する
 
 ##### CreateBpmProvider
 
@@ -1357,6 +1395,8 @@ public BpmProvider CreateBpmProvider(MeasureLengthProvider measureLengthProvider
   - `tpb`：TPB（一拍の分解能）
 - 戻り値：
   - `BpmProvider`：BPMプロバイダ
+- 例外/注意：
+  - BPM変更ノートが存在しない場合、または譜面始点に存在しない場合、`ArgumentException` を送出する
 
 ##### CreateSpeedMultiplierProvider
 
@@ -1410,7 +1450,7 @@ public NoteGroupProfile(NoteGroupDef noteGroupDef, IReadOnlyList<NoteProfile> be
   - `noteGroupDef`：ノートグループ定義
   - `belongsNotes`：グループに所属するノーツ
 - 例外/注意：
-  - いずれかの引数が `null` の場合、`ArgumentNullException` を送出する
+  - `noteGroupDef` または `belongsNotes` が `null` の場合、`ArgumentNullException` を送出する
   - ランダムな `Guid` が新規に生成される
 
 #### メソッド
@@ -1541,6 +1581,8 @@ public NoteGroupId(string value)
 | `IsEmpty`         | `bool`    | get      | チャンネル情報を持っていないかどうか            |
 | `Value`           | `int`     | get      | チャンネル値                                    |
 
+`Empty` が返すインスタンスの `Value` を取得した場合、`InvalidOperationException` を送出する。
+
 #### コンストラクタ
 
 ##### Channel
@@ -1591,12 +1633,16 @@ public ChannelProvider(NoteGroupDefCollection noteGroupDefCollection, NoteProfil
 public Channel GetAvailableChannel(Position startPosition, Position endPosition, Layer layer)
 ```
 - 役割：指定された範囲内で利用可能なチャンネルを取得する
+  - 対象レイヤーで、指定範囲と端点を含めて重なる予約が使用していない最小のチャンネル値を返す
 - 引数：
   - `startPosition`：範囲始点
   - `endPosition`：範囲終点
   - `layer`：対象レイヤー
 - 戻り値：
   - `Channel`：指定された範囲内で利用可能なチャンネル
+- 例外/注意：
+  - ノートグループの終点ノートが見つからない場合、`InvalidOperationException` を送出する
+  - 利用可能なチャンネル値が範囲内にない場合、`ArgumentOutOfRangeException` を送出する
 
 ##### GetAvailableChannelAndAddReservation
 
@@ -1604,12 +1650,16 @@ public Channel GetAvailableChannel(Position startPosition, Position endPosition,
 public Channel GetAvailableChannelAndAddReservation(Position startPosition, Position endPosition, Layer layer)
 ```
 - 役割：指定された範囲内で利用可能なチャンネルを取得し、指定された範囲のチャンネルを予約します。クラスが状態を持つようになるため、取り扱いには注意してください。
+  - 対象レイヤーで、指定範囲と端点を含めて重なる予約が使用していない最小のチャンネル値を返す
 - 引数：
   - `startPosition`：範囲始点
   - `endPosition`：範囲終点
   - `layer`：対象レイヤー
 - 戻り値：
   - `Channel`：指定された範囲内で利用可能なチャンネル
+- 例外/注意：
+  - ノートグループの終点ノートが見つからない場合、`InvalidOperationException` を送出する
+  - 利用可能なチャンネル値が範囲内にない場合、`ArgumentOutOfRangeException` を送出する
 
 ##### ClearAddedReservations
 
@@ -1652,7 +1702,7 @@ public NoteDef(NoteId noteId, IReadOnlyList<string> propertyNames)
   - `noteId`：ノートID
   - `propertyNames`：ノートプロパティ名のリスト
 - 例外/注意：
-  - いずれかの引数が `null` の場合、`ArgumentNullException` を送出する
+  - `noteDef`、`position`、`propertyValues`、`layer`、`channel` のいずれかが `null` の場合、`ArgumentNullException` を送出する
 
 #### メソッド
 
@@ -1767,6 +1817,7 @@ public NoteGroupDef(NoteGroupId noteGroupId, IReadOnlyList<NoteId> belongsNoteId
   - `belongsNoteIds`：ノートグループに所属するノートのIDのリスト
 - 例外/注意：
   - いずれかの引数が `null` の場合、`ArgumentNullException` を送出する
+  - `belongsNoteIds` が空の場合、`StartNoteId` と `EndNoteId` は取得できない
 
 #### メソッド
 
@@ -1810,6 +1861,9 @@ public NoteGroupDef GetNoteGroupDefById(NoteGroupId noteGroupId)
   - `noteGroupId`：ノートグループID
 - 戻り値：
   - `NoteGroupDef`：指定されたノートグループIDを持つ `NoteGroupDef` インスタンス
+- 例外/注意：
+  - `noteGroupId` が `null` の場合、`NullReferenceException` を送出する
+  - ノートグループ定義が見つからない場合、`KeyNotFoundException` を送出する
 
 ##### GetNoteGroupDefById
 
@@ -1821,6 +1875,9 @@ public NoteGroupDef GetNoteGroupDefById(string noteGroupId)
   - `noteGroupId`：ノートグループID文字列
 - 戻り値：
   - `NoteGroupDef`：指定されたノートグループIDを持つ `NoteGroupDef` インスタンス
+- 例外/注意：
+  - `noteGroupId` が `null` の場合、`ArgumentNullException` を送出する
+  - ノートグループ定義が見つからない場合、`KeyNotFoundException` を送出する
 
 ##### GetNoteGroupDefByStartNoteId
 
@@ -1832,6 +1889,8 @@ public NoteGroupDef GetNoteGroupDefByStartNoteId(NoteId startNoteId)
   - `startNoteId`：始点ノートID
 - 戻り値：
   - `NoteGroupDef`：始点ノートが指定されたノートIDを持つ `NoteGroupDef` インスタンス
+- 例外/注意：
+  - ノートグループ定義が見つからない場合、`KeyNotFoundException` を送出する
 
 ##### BelongsToAnyGroup
 
@@ -1936,6 +1995,9 @@ public Property(string key, string value)
 - 引数：
   - `key`：プロパティキー
   - `value`：プロパティ値
+- 例外/注意：
+  - `key` または `value` が `null`、空文字、空白のみの場合、`ArgumentException` を送出する
+  - `key` に半角スペースが含まれる場合、`ArgumentException` を送出する
 
 #### メソッド
 
@@ -1949,6 +2011,8 @@ public Property UpdateValue(PropertyValue value)
   - `value`：新しいプロパティ値
 - 戻り値：
   - `Property`：プロパティ値が更新された新しい `Property` インスタンス
+- 例外/注意：
+  - `value` が `null` の場合、`ArgumentNullException` を送出する
 
 ---
 
@@ -1976,7 +2040,7 @@ public PropertyKey(string value)
   - `value`：プロパティキー値
 - 例外/注意：
   - `value` が `null` / 空文字 / 空白のみの場合、`ArgumentException` を送出する
-  - `value` に空白が含まれる場合、`ArgumentException` を送出する
+  - `value` に半角スペースが含まれる場合、`ArgumentException` を送出する
 
 #### メソッド
 
@@ -2044,6 +2108,8 @@ public int AsInt()
   - `int`：プロパティ値
 - 例外/注意：
   - インスタンスがプロパティ値を持っていない場合、`InvalidOperationException` を送出する
+  - 値を整数として解析できない場合、`InvalidCastException` を送出する
+  - 整数への変換にはインバリアントカルチャを使用する
 
 ##### AsFloat
 
@@ -2057,6 +2123,8 @@ public float AsFloat()
   - `float`：プロパティ値
 - 例外/注意：
   - インスタンスがプロパティ値を持っていない場合、`InvalidOperationException` を送出する
+  - 値を浮動小数点数として解析できない場合、`InvalidCastException` を送出する
+  - 浮動小数点数への変換にはインバリアントカルチャを使用する
 
 ##### AsBoolean
 
@@ -2070,6 +2138,7 @@ public bool AsBoolean()
   - `bool`：プロパティ値
 - 例外/注意：
   - インスタンスがプロパティ値を持っていない場合、`InvalidOperationException` を送出する
+  - 値を真偽値として解析できない場合、`InvalidCastException` を送出する
 
 ##### HasValue
 
@@ -2133,7 +2202,10 @@ public static PropertyGroup MergeKeysAndValues(IReadOnlyList<string> keys, IRead
 - 戻り値：
   - `PropertyGroup`：作成されたインスタンス
 - 例外/注意：
+  - `keys` または `values` が `null` の場合、`ArgumentNullException` を送出する
   - `keys` と `values` の要素数が一致しない場合、 `ArgumentException` を送出する
+  - キーまたは値の要素が `null`、空文字、空白のみの場合、`ArgumentException` を送出する
+  - キーの要素に半角スペースが含まれる場合、`ArgumentException` を送出する
 
 ##### CreateFromPropertyNames（Static）
 
@@ -2145,6 +2217,9 @@ public static PropertyGroup CreateFromPropertyNames(IReadOnlyList<string> proper
   - `propertyNames`：キーの配列
 - 戻り値：
   - `PropertyGroup`：作成されたインスタンス
+- 例外/注意：
+  - `propertyNames` が `null` の場合、`NullReferenceException` を送出する
+  - 要素が `null`、空文字、空白のみの場合、または半角スペースを含む場合、`ArgumentException` を送出する
 
 ##### GetPropertyByKey
 
@@ -2157,7 +2232,8 @@ public Property GetPropertyByKey(string key)
 - 戻り値：
   - `Property`：キーに対応する `Property` インスタンス
 - 例外/注意：
-  - `key` に対応する `Property` インスタンスが存在しない場合、 `ArgumentException` を送出する
+  - `key` が `null`、空文字、空白のみの場合、または半角スペースを含む場合、`ArgumentException` を送出する
+  - `key` に対応する `Property` インスタンスが存在しない場合、`KeyNotFoundException` を送出する
 
 ##### GetPropertyByKey
 
@@ -2170,7 +2246,8 @@ public Property GetPropertyByKey(PropertyKey key)
 - 戻り値：
   - `Property`：キーに対応する `Property` インスタンス
 - 例外/注意：
-  - `key` に対応する `Property` インスタンスが存在しない場合、 `ArgumentException` を送出する
+  - `key` が `null` の場合、`NullReferenceException` を送出する
+  - `key` に対応する `Property` インスタンスが存在しない場合、`KeyNotFoundException` を送出する
 
 ##### HasKey
 
@@ -2182,6 +2259,8 @@ public bool HasKey(string key)
   - `key`：検索するキー
 - 戻り値：
   - `bool`：キーに対応するプロパティが存在するかどうか
+- 例外/注意：
+  - `key` が `null`、空文字、空白のみの場合、または半角スペースを含む場合、`ArgumentException` を送出する
 
 ##### HasKey
 
@@ -2193,6 +2272,8 @@ public bool HasKey(PropertyKey key)
   - `key`：検索するキー
 - 戻り値：
   - `bool`：キーに対応するプロパティが存在するかどうか
+- 例外/注意：
+  - `key` が `null` の場合、`ArgumentNullException` を送出する
 
 ##### AllPropertiesHasValue
 
@@ -2217,6 +2298,8 @@ public PropertyGroup AddOrUpdateProperty(Property property)
   - `property`：追加/更新するプロパティ
 - 戻り値：
   - `PropertyGroup`：プロパティが更新された `PropertyGroup` インスタンス
+- 例外/注意：
+  - `property` が `null` の場合、`ArgumentNullException` を送出する
 
 ##### AddOrUpdateProperties
 
@@ -2230,6 +2313,9 @@ public PropertyGroup AddOrUpdateProperties(IReadOnlyList<Property> properties)
   - `properties`：追加/更新するプロパティリスト
 - 戻り値：
   - `PropertyGroup`：プロパティが更新された `PropertyGroup` インスタンス
+- 例外/注意：
+  - `properties` が `null` の場合、`ArgumentNullException` を送出する
+  - `properties` に `null` の要素が含まれる場合、`NullReferenceException` を送出する
 
 ##### GetPropertyValueList
 
@@ -2241,6 +2327,8 @@ public IReadOnlyList<string> GetPropertyValueList()
   - なし
 - 戻り値：
   - `IReadOnlyList<string>`：プロパティ値文字列のリスト
+- 例外/注意：
+  - 値を持たないプロパティが含まれる場合、`InvalidOperationException` を送出する
 
 ### ChartPropertyGroup
 
@@ -2281,6 +2369,9 @@ public Property GetPropertyByKey(string key)
   - `key`：検索するキー
 - 戻り値：
   - `Property`：キーに対応する `Property` インスタンス
+- 例外/注意：
+  - `key` が `null`、空文字、空白のみの場合、または半角スペースを含む場合、`ArgumentException` を送出する
+  - `key` に対応する `Property` インスタンスが存在しない場合、`KeyNotFoundException` を送出する
 
 ##### GetGameId
 
@@ -2292,6 +2383,9 @@ public string GetGameId()
   - なし
 - 戻り値：
   - `string`：ゲームID
+- 例外/注意：
+  - `GameID` プロパティが存在しない場合、`KeyNotFoundException` を送出する
+  - `GameID` プロパティが値を持たない場合、`InvalidOperationException` を送出する
 
 ##### GetTpb
 
@@ -2303,6 +2397,11 @@ public Tpb GetTpb()
   - なし
 - 戻り値：
   - `Tpb`：TPB
+- 例外/注意：
+  - `TicksPerBeat` プロパティが存在しない場合、`KeyNotFoundException` を送出する
+  - `TicksPerBeat` プロパティが値を持たない場合、`InvalidOperationException` を送出する
+  - 値を整数として解析できない場合、`InvalidCastException` を送出する
+  - 値が `0` 以下の場合、`ArgumentOutOfRangeException` を送出する
 
 ---
 
