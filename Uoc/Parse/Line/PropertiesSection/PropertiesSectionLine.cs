@@ -33,7 +33,10 @@ namespace Uoc.Parse.Line.PropertiesSection
                     throw new FormatException("正規表現によるパースに失敗しました。");
                 }
                 var key = new PropertyKey(match.Groups[1].Value);
-                var value = new PropertyValue(match.Groups[2].Value);
+                var valueText = match.Groups[2].Value;
+                var value = valueText.Length == 0
+                    ? PropertyValue.Empty
+                    : new PropertyValue(valueText);
                 return new PropertiesSectionLine(key, value);
             }
             catch (Exception e)
