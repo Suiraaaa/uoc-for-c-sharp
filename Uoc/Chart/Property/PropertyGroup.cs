@@ -166,13 +166,13 @@ namespace Uoc.Chart.Property
             var editingProperties = new List<Property>(this.properties);
             foreach (var property in properties)
             {
-                if (!HasKey(property.Key))
+                var index = editingProperties.FindIndex(x => x.Key == property.Key);
+                if (index == -1)
                 {
                     editingProperties.Add(property);
                 }
                 else
                 {
-                    var index = editingProperties.FindIndex(x => x.Key == property.Key);
                     editingProperties[index] = editingProperties[index].UpdateValue(property.Value);
                 }
             }
