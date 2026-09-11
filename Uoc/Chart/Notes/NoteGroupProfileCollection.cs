@@ -37,11 +37,12 @@ namespace Uoc.Chart.Notes
                 }
 
                 // グループに所属するノートを抽出
+                var targetLayer = noteProfiles[index].Layer;
                 var targetChannel = noteProfiles[index].Channel;
                 var belongsNotes = new List<NoteProfile>();
                 for (int i = index; i < noteProfiles.Count; i++)
                 {
-                    if (noteProfiles[i].Channel.IsEmpty || noteProfiles[i].Channel != targetChannel)
+                    if (noteProfiles[i].Layer != targetLayer || noteProfiles[i].Channel.IsEmpty || noteProfiles[i].Channel != targetChannel)
                     {
                         continue;
                     }

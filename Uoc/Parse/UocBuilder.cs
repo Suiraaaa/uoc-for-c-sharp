@@ -49,8 +49,10 @@ namespace Uoc.Parse
             for (int i = 0; i < chartPropertyGroup.Count; i++)
             {
                 var property = chartPropertyGroup[i];
-                if (property.Key.Value == "GameID" || property.Key.Value == "TicksPerBeat" || property.Key.Value == "Title") continue;
-                stringBuilder.AppendLine($"# {property.Key.Value} : \"{property.Value.AsString()}\"");
+                var key = property.Key.Value;
+                var value = property.Value.HasValue() ? property.Value.AsString() : string.Empty;
+                if (key == "GameID" || key == "TicksPerBeat") continue;
+                stringBuilder.AppendLine($"# {key} : \"{value}\"");
             }
             stringBuilder.AppendLine();
 
@@ -99,7 +101,7 @@ namespace Uoc.Parse
             var noteProfiles = noteProfileCollection.NoteProfiles;
 
             // レイヤーごとに処理
-            for (int i = 0; i < Layer.MaxLayerValue; i++)
+            for (int i = Layer.MinLayerValue; i <= Layer.MaxLayerValue; i++)
             {
                 var notesInLayer = noteProfiles.Where(x => x.Layer.Value == i).OrderBy(x => x.Position.MeasureIndex.Value).ThenBy(x => x.Position.Position01).ToList();
                 if (notesInLayer.Count == 0) continue;
