@@ -13,6 +13,7 @@ namespace Uoc.Parse
     /// </summary>
     public static class UocBuilder
     {
+        private const int MAX_MEASURE_INDEX = 46655; // Base36の三桁で表せる最大数
 
         public static UocString Build(string editorName, ChartPropertyGroup chartPropertyGroup, NoteDefCollection noteDefCollection, NoteGroupDefCollection noteGroupDefCollection, NoteProfileCollection noteProfileCollection)
         {
@@ -108,8 +109,7 @@ namespace Uoc.Parse
                 stringBuilder.AppendLine($"# LAYER : {i}");
                 foreach (var note in notesInLayer)
                 {
-                    // TODO: MEASUREBSを実装する
-                    if (note.Position.MeasureIndex.Value > 999) throw new Exception("小節番号を999より大きくすることはできません。");
+                    if (note.Position.MeasureIndex.Value > MAX_MEASURE_INDEX) throw new ArgumentOutOfRangeException($"小節番号は0から{MAX_MEASURE_INDEX}の範囲内である必要があります。(入力値: {note.Position.MeasureIndex.Value})");
 
                     var line = $"# {Base36.Encode(note.Position.MeasureIndex.Value).ToString().PadLeft(3, '0')}";
                     line += $"{Base36.Encode(noteDefCollection.GetNoteDefIndexById(note.NoteDef.NoteId).Value).PadLeft(2, '0')}";

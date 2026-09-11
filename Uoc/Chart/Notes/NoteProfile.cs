@@ -124,14 +124,14 @@ namespace Uoc.Chart.Notes
         internal BpmChangeEvent ToBpmChangeEvent(MeasureLengthProvider measureLengthProvider, Tpb tpb)
         {
             if (!IsBpmChangeNote()) throw new InvalidOperationException("ノートがBPMChangeNoteではないため、BPMChangeEventに変換できません。");
-            var bpm = new Bpm(propertyGroup.GetPropertyByKey("bpm").Value.AsInt());
+            var bpm = new Bpm(propertyGroup.GetPropertyByKey("bpm").Value.AsFloat());
             return new BpmChangeEvent(position, bpm, measureLengthProvider, tpb);
         }
 
         internal SpeedMultiplierChangeEvent ToSpeedChangeEvent(MeasureLengthProvider measureLengthProvider, Tpb tpb)
         {
             if (!IsSpeedChangeNote()) throw new InvalidOperationException("ノートがSpeedChangeNoteではないため、SpeedChangeEventに変換できません。");
-            var speedMultiplier = new SpeedMultiplier(propertyGroup.GetPropertyByKey("speed").Value.AsInt());
+            var speedMultiplier = new SpeedMultiplier(propertyGroup.GetPropertyByKey("speed").Value.AsFloat());
             return new SpeedMultiplierChangeEvent(position, layer, speedMultiplier, measureLengthProvider, tpb);
         }
 

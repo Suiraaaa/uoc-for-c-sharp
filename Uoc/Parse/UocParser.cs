@@ -39,7 +39,7 @@ namespace Uoc.Parse
             var rawChartSectionLines = lineCollection.GetLinesIn(SectionType.Chart);
             var chartSectionLineCollection = ChartSectionLineCollection.ParseUocLines(rawChartSectionLines);
             var noteProfileCollection = NoteProfileCollection.Create(noteDefCollection, chartSectionLineCollection);
-            var noteGroupProfileCollection = NoteGroupProfileCollection.Create(noteGroupDefCollection, noteProfileCollection);
+            var noteGroupProfileCollection = noteProfileCollection.CreateNoteGroupProfileCollection(noteGroupDefCollection);
 
             return new UocObject(propertyGroup, noteDefCollection, noteGroupDefCollection, noteProfileCollection, noteGroupProfileCollection);
         }

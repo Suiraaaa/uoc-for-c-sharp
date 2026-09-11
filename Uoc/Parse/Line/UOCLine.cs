@@ -30,7 +30,7 @@ namespace Uoc.Parse.Line
             }
 
             // セクション開始行の場合のパース
-            if (line.Contains('@'))
+            if (line.TrimStart().StartsWith('@'))
             {
                 try
                 {
@@ -48,7 +48,7 @@ namespace Uoc.Parse.Line
             }
 
             // データ行の場合のパース
-            if (line.Contains('#'))
+            if (line.TrimStart().StartsWith('#'))
             {
                 try
                 {

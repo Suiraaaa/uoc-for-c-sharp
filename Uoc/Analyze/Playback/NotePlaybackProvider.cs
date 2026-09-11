@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Uoc.Analyze.Speed;
 using Uoc.Chart;
 using Uoc.Chart.Event;
@@ -73,7 +72,8 @@ namespace Uoc.Analyze.Playback
 
         /// <summary>
         /// タイミングからノートの位置を求めます。
-        /// ノート生成位置を1,判定位置を0とし、それ以降は負の値をとります。
+        /// ノート生成位置を1、判定位置を0とします。
+        /// 速度倍率が正の場合、判定位置を通過した後は負の値をとります。
         /// </summary>
         /// <param name="timing">タイミング</param>
         /// <returns>ノートの位置</returns>
@@ -84,85 +84,67 @@ namespace Uoc.Analyze.Playback
             /* 小節線以降のハイスピを無視する処理 */
             if (analysisSetting.IgnoreSpeedChangesAfterJudgeLine && timing > enabledTiming)
             {
-                return (enabledTiming - timing) / basicSpeed.MoveDuration;
+                return (float)(((double)enabledTiming - timing) / basicSpeed.MoveDuration);
             }
 
-            /* 計算するタイミング範囲を求める */
             var startTiming = Math.Min(timing, enabledTiming);
             var endTiming = Math.Max(timing, enabledTiming);
+            var moveDistance = CalculateMoveDistance(startTiming, endTiming);
+            var direction = timing > enabledTiming ? -1 : 1;
+            return (float)(moveDistance / basicSpeed.MoveDuration * direction);
+        }
 
-            /* 小節範囲内のスピード変動をすべて求める */
-            //var startMeasureIndex = CalculateMeasureIndexFromTiming(startTiming);
-            //var endMeasureIndex = CalculateMeasureIndexFromTiming(endTiming);
-            //var preAppliedSpeedMultiplier = speedMultiplierProvider.GetSpeedMultiplierAt(Math.Min(startMeasureIndex, 0), noteProfile.Layer);
-            //var speedChangeEvents = speedMultiplierProvider.GetSpeedChangeEventsWithoutStartPoint(startMeasureIndex, endMeasureIndex, noteProfile.Layer);
-            var preAppliedSpeedMultiplier = new SpeedMultiplier(1.0f);
-            var speedChangeEvents = new List<SpeedMultiplierChangeEvent>();
-
-            /* スピード変動がない場合はそのまま返す */
-            if (speedChangeEvents.Count == 0)
+        private double CalculateMoveDistance(long startTiming, long endTiming)
+        {
+            if (startTiming == endTiming)
             {
-                return (enabledTiming - timing) * preAppliedSpeedMultiplier.Multiplier / basicSpeed.MoveDuration;
+                return 0;
             }
 
-            // 移動距離を計算
-            var moveDist = 0f;
-            for (int i = 0; i < speedChangeEvents.Count + 1; i++)
+            var currentTiming = startTiming;
+            var currentSpeedMultiplier = GetSpeedMultiplierAt(startTiming);
+            var firstMeasureIndex = CalculateMeasureIndexFromTiming(Math.Max(startTiming, 0));
+            var lastMeasureIndex = CalculateMeasureIndexFromTiming(Math.Max(endTiming, 0));
+            var speedChangeEvents = speedMultiplierProvider.GetSpeedMultiplierChangeEventsAt(firstMeasureIndex, lastMeasureIndex, noteProfile.Layer);
+
+            double moveDistance = 0;
+            foreach (var speedChangeEvent in speedChangeEvents)
             {
-                var speedMultiplier = i == 0 ? preAppliedSpeedMultiplier : speedChangeEvents[i - 1].SpeedMultiplier;
-                var start = i == 0 ? startTiming : CalculateTiming(speedChangeEvents[i - 1].MeasureIndex.Value, speedChangeEvents[i - 1].Tick.Value);
-                var end = i == speedChangeEvents.Count ? endTiming : CalculateTiming(speedChangeEvents[i].MeasureIndex.Value, speedChangeEvents[i].Tick.Value);
-                moveDist += (end - start) * speedMultiplier.Multiplier;
+                var speedChangeTiming = CalculateTiming(speedChangeEvent.MeasureIndex.Value, speedChangeEvent.Tick.Value);
+                if (speedChangeTiming <= startTiming || speedChangeTiming >= endTiming)
+                {
+                    continue;
+                }
+
+                moveDistance += ((double)speedChangeTiming - currentTiming) * currentSpeedMultiplier.Multiplier;
+                currentTiming = speedChangeTiming;
+                currentSpeedMultiplier = speedChangeEvent.SpeedMultiplier;
             }
 
-            //return moveDist / basicSpeed.MoveDuration * (timing > enabledTiming ? -1 : 1);
-            return 0;
+            moveDistance += ((double)endTiming - currentTiming) * currentSpeedMultiplier.Multiplier;
+            return moveDistance;
+        }
 
+        private SpeedMultiplier GetSpeedMultiplierAt(long timing)
+        {
+            if (timing < 0)
+            {
+                return speedMultiplierProvider.GetMeasureStartSpeedMultiplier(0, noteProfile.Layer);
+            }
 
-
-
-            //var basicSpeed = analysisSetting.BasicSpeed;
-
-            ///* タイミングが負の場合、譜面始点のスピード倍率を適用する */
-            //if (timing < 0)
-            //{
-            //    var initialSpeedMultiplier = speedMultiplierProvider.GetSpeedMultiplierAt(0, noteProfile.Layer);
-            //    return timing * initialSpeedMultiplier.Multiplier / basicSpeed.MoveDuration;
-            //}
-
-            ///* 小節線以降のハイスピを無視する処理 */
-            //if (analysisSetting.IgnoreSpeedChangesAfterJudgeLine && timing > enabledTiming)
-            //{
-            //    return (enabledTiming - timing) / basicSpeed.MoveDuration;
-            //}
-
-            ///* 計算するタイミング範囲を求める */
-            //var startTiming = Math.Min(timing, enabledTiming);
-            //var endTiming = Math.Max(timing, enabledTiming);
-
-            ///* 小節範囲内のスピード変動をすべて求める */
-            //var startMeasureIndex = CalculateMeasureIndexFromTiming(startTiming);
-            //var endMeasureIndex = CalculateMeasureIndexFromTiming(endTiming);
-            //var preAppliedSpeedMultiplier = speedMultiplierProvider.GetSpeedMultiplierAt(startMeasureIndex, noteProfile.Layer);
-            //var speedChangeEvents = speedMultiplierProvider.GetSpeedChangeEventsWithoutStartPoint(startMeasureIndex, endMeasureIndex, noteProfile.Layer);
-
-            ///* スピード変動がない場合はそのまま返す */
-            //if (speedChangeEvents.Count == 0)
-            //{
-            //    return (timing - enabledTiming) * preAppliedSpeedMultiplier.Multiplier / basicSpeed.MoveDuration;
-            //}
-
-            //// 移動距離を計算
-            //var moveDist = 0f;
-            //for (int i = 0; i < speedChangeEvents.Count + 1; i++)
-            //{
-            //    var speedMultiplier = i == 0 ? preAppliedSpeedMultiplier : speedChangeEvents[i - 1].SpeedMultiplier;
-            //    var start = i == 0 ? startTiming : CalculateTiming(speedChangeEvents[i - 1].MeasureIndex.Value, speedChangeEvents[i - 1].Tick.Value);
-            //    var end = i == speedChangeEvents.Count ? endTiming : CalculateTiming(speedChangeEvents[i].MeasureIndex.Value, speedChangeEvents[i].Tick.Value);
-            //    moveDist += (end - start) * speedMultiplier.Multiplier;
-            //}
-
-            //return moveDist / basicSpeed.MoveDuration * (timing > enabledTiming ? -1 : 1);
+            var measureIndex = CalculateMeasureIndexFromTiming(timing);
+            var speedMultiplier = speedMultiplierProvider.GetMeasureStartSpeedMultiplier(measureIndex, noteProfile.Layer);
+            var speedChangeEvents = speedMultiplierProvider.GetSpeedMultiplierChangeEventsAt(measureIndex, measureIndex, noteProfile.Layer);
+            foreach (var speedChangeEvent in speedChangeEvents)
+            {
+                var speedChangeTiming = CalculateTiming(speedChangeEvent.MeasureIndex.Value, speedChangeEvent.Tick.Value);
+                if (speedChangeTiming > timing)
+                {
+                    break;
+                }
+                speedMultiplier = speedChangeEvent.SpeedMultiplier;
+            }
+            return speedMultiplier;
         }
 
         /// <summary>
@@ -187,7 +169,6 @@ namespace Uoc.Analyze.Playback
         {
             var measureStartTiming = CalculateMeasureStartTiming(measureIndex);
             var measureDuration = CalculateMeasureDurationUpToTick(measureIndex, tick);
-            Console.Write($"[{measureDuration}]");
             return (long)(measureStartTiming + measureDuration);
         }
 

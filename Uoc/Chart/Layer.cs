@@ -51,7 +51,7 @@ namespace Uoc.Chart
 
         internal static bool CanFormUocLine(UocLine uocLine)
         {
-            return uocLine.LineText.Replace(" ", "")[..5] == layerLineHeader;
+            return uocLine.LineText.Replace(" ", "").StartsWith(layerLineHeader, StringComparison.Ordinal);
         }
 
         public override bool Equals(object obj)
