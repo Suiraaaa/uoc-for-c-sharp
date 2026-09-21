@@ -13,27 +13,22 @@ namespace Uoc.Analyze.Playback
     public class NotePlaybackProvider
     {
         private readonly NoteProfile noteProfile;
-        private readonly BpmProvider bpmProvider;
         private readonly SpeedMultiplierProvider speedMultiplierProvider;
-        private readonly MeasureLengthProvider measureLengthProvider;
         private readonly AnalysisSetting analysisSetting;
-        private readonly Tpb tpb;
+        private readonly PlaybackTimingCalculator timingCalculator;
         private readonly long instantiateTiming;
         private readonly long enabledTiming;
 
-        internal NotePlaybackProvider(NoteProfile noteProfile, EventProviders eventsProvider, AnalysisSetting analysisSetting, Tpb tpb, MeasureIndex maxMeasureIndex)
+        internal NotePlaybackProvider(NoteProfile noteProfile, SpeedMultiplierProvider speedMultiplierProvider, AnalysisSetting analysisSetting, PlaybackTimingCalculator timingCalculator, MeasureIndex maxMeasureIndex)
         {
-            if (eventsProvider == null) throw new ArgumentNullException(nameof(eventsProvider));
             if (maxMeasureIndex == null) throw new ArgumentNullException(nameof(maxMeasureIndex));
 
             this.noteProfile = noteProfile ?? throw new ArgumentNullException(nameof(noteProfile));
             this.analysisSetting = analysisSetting ?? throw new ArgumentNullException(nameof(analysisSetting));
-            this.tpb = tpb ?? throw new ArgumentNullException(nameof(tpb));
+            this.timingCalculator = timingCalculator ?? throw new ArgumentNullException(nameof(timingCalculator));
 
-            bpmProvider = eventsProvider.BpmProvider;
-            speedMultiplierProvider = eventsProvider.SpeedMultiplierProvider;
-            measureLengthProvider = eventsProvider.MeasureLengthProvider;
-            enabledTiming = CalculateTimingFromPosition(noteProfile.Position);
+            this.speedMultiplierProvider = speedMultiplierProvider ?? throw new ArgumentNullException(nameof(speedMultiplierProvider));
+            enabledTiming = timingCalculator.CalculateTimingFromPosition(noteProfile.Position);
             instantiateTiming = GetInstantiateTiming(analysisSetting, maxMeasureIndex);
         }
 
@@ -68,8 +63,6 @@ namespace Uoc.Analyze.Playback
          * (軽量化の余地あり)
          */
 
-        // TODO: 計算量が多いため、CalculateMeasureDuration()の処理結果をDictionaryでキャッシュしたい
-
         /// <summary>
         /// タイミングからノートの位置を求めます。
         /// ノート生成位置を1、判定位置を0とします。
@@ -103,14 +96,14 @@ namespace Uoc.Analyze.Playback
 
             var currentTiming = startTiming;
             var currentSpeedMultiplier = GetSpeedMultiplierAt(startTiming);
-            var firstMeasureIndex = CalculateMeasureIndexFromTiming(Math.Max(startTiming, 0));
-            var lastMeasureIndex = CalculateMeasureIndexFromTiming(Math.Max(endTiming, 0));
+            var firstMeasureIndex = timingCalculator.CalculateMeasureIndexFromTiming(Math.Max(startTiming, 0));
+            var lastMeasureIndex = timingCalculator.CalculateMeasureIndexFromTiming(Math.Max(endTiming, 0));
             var speedChangeEvents = speedMultiplierProvider.GetSpeedMultiplierChangeEventsAt(firstMeasureIndex, lastMeasureIndex, noteProfile.Layer);
 
-            double moveDistance = 0;
+            var moveDistance = 0d;
             foreach (var speedChangeEvent in speedChangeEvents)
             {
-                var speedChangeTiming = CalculateTiming(speedChangeEvent.MeasureIndex.Value, speedChangeEvent.Tick.Value);
+                var speedChangeTiming = timingCalculator.CalculateTiming(speedChangeEvent.MeasureIndex.Value, speedChangeEvent.Tick.Value);
                 if (speedChangeTiming <= startTiming || speedChangeTiming >= endTiming)
                 {
                     continue;
@@ -132,12 +125,12 @@ namespace Uoc.Analyze.Playback
                 return speedMultiplierProvider.GetMeasureStartSpeedMultiplier(0, noteProfile.Layer);
             }
 
-            var measureIndex = CalculateMeasureIndexFromTiming(timing);
+            var measureIndex = timingCalculator.CalculateMeasureIndexFromTiming(timing);
             var speedMultiplier = speedMultiplierProvider.GetMeasureStartSpeedMultiplier(measureIndex, noteProfile.Layer);
             var speedChangeEvents = speedMultiplierProvider.GetSpeedMultiplierChangeEventsAt(measureIndex, measureIndex, noteProfile.Layer);
             foreach (var speedChangeEvent in speedChangeEvents)
             {
-                var speedChangeTiming = CalculateTiming(speedChangeEvent.MeasureIndex.Value, speedChangeEvent.Tick.Value);
+                var speedChangeTiming = timingCalculator.CalculateTiming(speedChangeEvent.MeasureIndex.Value, speedChangeEvent.Tick.Value);
                 if (speedChangeTiming > timing)
                 {
                     break;
@@ -147,159 +140,12 @@ namespace Uoc.Analyze.Playback
             return speedMultiplier;
         }
 
-        /// <summary>
-        /// 指定された位置からタイミングを計算します。
-        /// </summary>
-        /// <param name="position">譜面位置</param>
-        /// <returns>指定された位置のタイミング</returns>
-        private long CalculateTimingFromPosition(Position position)
-        {
-            var tick = CalculateTickFromPosition(position);
-            var measureIndex = position.MeasureIndex.Value;
-            return CalculateTiming(measureIndex, tick);
-        }
-
-        /// <summary>
-        /// 指定された位置のタイミングを計算します。
-        /// </summary>
-        /// <param name="measureIndex">対象小節番号</param>
-        /// <param name="tick">ティック</param>
-        /// <returns>指定された位置のタイミング</returns>
-        private long CalculateTiming(int measureIndex, int tick)
-        {
-            var measureStartTiming = CalculateMeasureStartTiming(measureIndex);
-            var measureDuration = CalculateMeasureDurationUpToTick(measureIndex, tick);
-            return (long)(measureStartTiming + measureDuration);
-        }
-
-        /// <summary>
-        /// 指定された小節が開始されるタイミングを取得します。
-        /// </summary>
-        /// <param name="measureIndex"></param>
-        /// <returns>指定された小節が開始されるタイミング</returns>
-        private float CalculateMeasureStartTiming(int measureIndex)
-        {
-            float timingSum = 0;
-            for (int i = 0; i < measureIndex; i++)
-            {
-                timingSum += CalculateMeasureDuration(i);
-            }
-            return timingSum;
-        }
-
-        /// <summary>
-        /// 指定された小節の持続時間を求めます。
-        /// </summary>
-        /// <param name="measureIndex">対象小節</param>
-        /// <returns>指定された小節の持続時間</returns>
-        private float CalculateMeasureDuration(int measureIndex)
-        {
-            int maxTick = CalculateMeasureMaxTick(measureIndex);
-            return CalculateMeasureDurationUpToTick(measureIndex, maxTick);
-        }
-
-        /// <summary>
-        /// 指定された小節内の、指定されたティックまでの持続時間を求めます。
-        /// </summary>
-        /// <param name="measureIndex">対象小節</param>
-        /// <param name="maxTick">最大ティック</param>
-        /// <returns>指定された小節内での指定されたティックまでの持続時間</returns>
-        private float CalculateMeasureDurationUpToTick(int measureIndex, int maxTick)
-        {
-            var measureMaxTick = CalculateMeasureMaxTick(measureIndex);
-            if (maxTick > measureMaxTick) throw new ArgumentException();
-
-            var measureLength = measureLengthProvider.GetMeasureLengthAt(measureIndex);
-            var measureStartBpm = bpmProvider.GetMeasureStartBpm(measureIndex);
-            var bpmChanges = bpmProvider.GetBpmChangeEventsAt(measureIndex);
-
-            // BPMの変動がない場合はそのまま
-            if (bpmChanges.Count == 0)
-            {
-                var measureMilliseconds = CalculateQuarterNoteMilliseconds(measureStartBpm.Value) * measureLength.GetQuarterNoteCount();
-                return measureMilliseconds * ((float)maxTick / measureMaxTick);
-            }
-
-            float duration = 0;
-            for (int i = 0; i < bpmChanges.Count + 1; i++)
-            {
-                var bpm = i == 0 ? measureStartBpm : bpmChanges[i - 1].Bpm;
-                var startTick = i == 0 ? 0 : bpmChanges[i - 1].Tick.Value;
-                var endTick = i == bpmChanges.Count ? measureMaxTick : bpmChanges[i].Tick.Value;
-                if (endTick > maxTick)
-                {
-                    endTick = maxTick;
-                }
-
-                var tickDuration = endTick - startTick;
-                var applyingRatio = (float)tickDuration / measureMaxTick;
-                duration += CalculateQuarterNoteMilliseconds(bpm.Value) * measureLength.GetQuarterNoteCount() * applyingRatio;
-
-                if (endTick == maxTick) break;
-            }
-            return duration;
-        }
-
-        /// <summary>
-        /// 指定された小節の最大ティックを求めます。
-        /// </summary>
-        /// <param name="measureIndex">対象小節</param>
-        /// <returns>指定された小節の最大ティック</returns>
-        private int CalculateMeasureMaxTick(int measureIndex)
-        {
-            var measureLength = measureLengthProvider.GetMeasureLengthAt(measureIndex);
-            return (int)Math.Floor((float)(measureLength.GetBeatCount() * tpb.Value)); // 小数点以下切り捨て
-        }
-
-        /// <summary>
-        /// 一拍の長さをミリ秒単位で求めます。
-        /// </summary>
-        /// <param bpm="bpm">BPM</param>
-        /// <returns>一拍の長さ（ミリ秒）</returns>
-        private float CalculateQuarterNoteMilliseconds(float bpm)
-        {
-            return 60f / bpm * 1000f;
-        }
-
-        /// <summary>
-        /// 指定された位置のティックを求めます。
-        /// </summary>
-        /// <param bpm="position">対象位置</param>
-        /// <returns>指定された位置のティック</returns>
-        private int CalculateTickFromPosition(Position position)
-        {
-            var measureLength = measureLengthProvider.GetMeasureLengthAt(position.MeasureIndex.Value);
-            return position.CalculateTickInt(measureLength, tpb);
-        }
-
-        /// <summary>
-        /// タイミングが所属する小節番号を求めます。
-        /// </summary>
-        /// <param name="timing">対象タイミング</param>
-        /// <returns>タイミングが所属する小節番号returns>
-        private int CalculateMeasureIndexFromTiming(long timing)
-        {
-            if (timing < 0) throw new ArgumentException(nameof(timing)); // 小節番号が負の値を取ることはないためエラー
-            int measureIndex = 0;
-            while (true)
-            {
-                var measureStartTiming = CalculateTiming(measureIndex, 0);
-                if (measureStartTiming > timing)
-                {
-                    measureIndex--;
-                    break;
-                }
-                measureIndex++;
-            }
-            return measureIndex;
-        }
-
         private long GetInstantiateTiming(AnalysisSetting analysisSetting, MeasureIndex maxMeasureIndex)
         {
             var minimumTiming = analysisSetting.MinimumTiming;
             var interval = analysisSetting.NotesInstantiationInterval;
-            var maxTiming = (long)CalculateMeasureStartTiming(maxMeasureIndex.Value + 1); // 最大のタイミングを、ノートが存在する最大小節の次の小節の開始点とする。
-            for (long i = minimumTiming; i < maxTiming; i += interval)
+            var maxTiming = (long)timingCalculator.CalculateMeasureStartTiming(maxMeasureIndex.Value + 1); // 最大のタイミングを、ノートが存在する最大小節の次の小節の開始点とする。
+            for (var i = minimumTiming; i < maxTiming; i += interval)
             {
                 var position = CalculateNotePosition(i);
                 if (position <= 1f) // 位置が生成位置に到達した場合
