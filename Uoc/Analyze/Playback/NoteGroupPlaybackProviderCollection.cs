@@ -15,7 +15,7 @@ namespace Uoc.Analyze.Playback
             this.noteGroupPlaybackProviders = noteGroupPlaybackProviders.OrderBy(x => x.FirstInstantiateTiming).ToList(); // 生成タイミングで昇順にソート
         }
 
-        public static NoteGroupPlaybackProviderCollection FormNoteProfileCollection(NotePlaybackProviderCollection notePlaybackProviderCollection, NoteGroupProfileCollection noteGroupProfileCollection)
+        public static NoteGroupPlaybackProviderCollection FormNoteProfileCollection(NotePlaybackProviderCollection notePlaybackProviderCollection, NoteGroupProfileCollection noteGroupProfileCollection, NoteGroupJudgmentCalculator judgmentCalculator)
         {
             var noteGroupPlaybackProviders = new List<NoteGroupPlaybackProvider>();
             foreach (var noteGroupProfile in noteGroupProfileCollection.NoteGroupProfiles)
@@ -27,7 +27,7 @@ namespace Uoc.Analyze.Playback
                     if (belongsNotePlaybackProvider == null) throw new KeyNotFoundException($"Guidが\"{note.Guid}\"のノートは見つかりませんでした。");
                     belongsNotePlaybackProviders.Add(belongsNotePlaybackProvider);
                 }
-                var noteGroupPlaybackProvider = new NoteGroupPlaybackProvider(noteGroupProfile.NoteGroupDef.NoteGroupId, belongsNotePlaybackProviders);
+                var noteGroupPlaybackProvider = new NoteGroupPlaybackProvider(noteGroupProfile, belongsNotePlaybackProviders, judgmentCalculator);
                 noteGroupPlaybackProviders.Add(noteGroupPlaybackProvider);
             }
             return new NoteGroupPlaybackProviderCollection(noteGroupPlaybackProviders);

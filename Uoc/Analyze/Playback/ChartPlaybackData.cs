@@ -27,8 +27,11 @@ namespace Uoc.Analyze.Playback
 
         internal static ChartPlaybackData Create(NoteDefCollection noteDefCollection, NoteGroupDefCollection noteGroupDefCollection, NoteProfileCollection noteProfiles, NoteGroupProfileCollection noteGroupProfiles, AnalysisSetting analysisSetting, Tpb tpb)
         {
-            var notePlaybackProviders = NotePlaybackProviderCollection.FormNoteProfileCollection(noteProfiles, analysisSetting, tpb);
-            var noteGroupPlaybackProviders = NoteGroupPlaybackProviderCollection.FormNoteProfileCollection(notePlaybackProviders, noteGroupProfiles);
+            var eventsProvider = noteProfiles.CreateEventProviders(tpb);
+            var timingCalculator = new PlaybackTimingCalculator(eventsProvider.BpmProvider, eventsProvider.MeasureLengthProvider, tpb);
+            var notePlaybackProviders = NotePlaybackProviderCollection.FormNoteProfileCollection(noteProfiles, eventsProvider, timingCalculator, analysisSetting);
+            var judgmentCalculator = new NoteGroupJudgmentCalculator(eventsProvider.BpmProvider, eventsProvider.MeasureLengthProvider, timingCalculator);
+            var noteGroupPlaybackProviders = NoteGroupPlaybackProviderCollection.FormNoteProfileCollection(notePlaybackProviders, noteGroupProfiles, judgmentCalculator);
             return new ChartPlaybackData(noteDefCollection, noteGroupDefCollection, notePlaybackProviders, noteGroupPlaybackProviders);
         }
 
