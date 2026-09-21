@@ -116,7 +116,7 @@ namespace Uoc.Analyze.Playback
         /// </summary>
         /// <param name="measureIndex">対象小節</param>
         /// <returns>指定された小節の最大ティック</returns>
-        private int CalculateMeasureMaxTick(int measureIndex)
+        public int CalculateMeasureMaxTick(int measureIndex)
         {
             var measureLength = measureLengthProvider.GetMeasureLengthAt(measureIndex);
             return (int)Math.Floor((float)(measureLength.GetBeatCount() * tpb.Value)); // 小数点以下切り捨て
