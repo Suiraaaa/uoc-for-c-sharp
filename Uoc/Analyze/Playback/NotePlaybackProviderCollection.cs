@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Uoc.Chart;
+using Uoc.Chart.Event;
 using Uoc.Chart.Notes;
 
 namespace Uoc.Analyze.Playback
@@ -16,11 +17,10 @@ namespace Uoc.Analyze.Playback
             this.notePlaybackProviders = notePlaybackProviders.OrderBy(x => x.InstantiateTiming).ToList(); // 生成タイミングで昇順にソート
         }
 
-        public static NotePlaybackProviderCollection FormNoteProfileCollection(NoteProfileCollection noteProfileCollection, AnalysisSetting analysisSetting, Tpb tpb)
+        public static NotePlaybackProviderCollection FormNoteProfileCollection(NoteProfileCollection noteProfileCollection, EventProviders eventsProvider, PlaybackTimingCalculator timingCalculator, AnalysisSetting analysisSetting)
         {
-            var eventsProvider = noteProfileCollection.CreateEventProviders(tpb);
             var maxMeasureIndex = noteProfileCollection.GetMaxMeasureIndex();
-            var notePlaybackProviders = noteProfileCollection.NoteProfiles.Select(x => new NotePlaybackProvider(x, eventsProvider, analysisSetting, tpb, maxMeasureIndex)).ToList();
+            var notePlaybackProviders = noteProfileCollection.NoteProfiles.Select(x => new NotePlaybackProvider(x, eventsProvider.SpeedMultiplierProvider, analysisSetting, timingCalculator, maxMeasureIndex)).ToList();
             return new NotePlaybackProviderCollection(notePlaybackProviders);
         }
 

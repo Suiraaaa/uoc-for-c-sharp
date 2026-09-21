@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Uoc.Chart;
 using Uoc.Chart.Notes;
 
 namespace Uoc.Analyze.Playback
@@ -9,23 +10,25 @@ namespace Uoc.Analyze.Playback
     /// </summary>
     public class NoteGroupPlaybackProvider
     {
-        private readonly NoteGroupId noteGroupId;
+        private readonly NoteGroupProfile noteGroupProfile;
         private readonly IReadOnlyList<NotePlaybackProvider> notePlaybackProviders;
+        private readonly NoteGroupJudgmentCalculator judgmentCalculator;
 
-        internal NoteGroupPlaybackProvider(NoteGroupId noteGroupId, IReadOnlyList<NotePlaybackProvider> notePlaybackProviders)
+        internal NoteGroupPlaybackProvider(NoteGroupProfile noteGroupProfile, IReadOnlyList<NotePlaybackProvider> notePlaybackProviders, NoteGroupJudgmentCalculator judgmentCalculator)
         {
-            if (noteGroupId == null) throw new ArgumentNullException(nameof(noteGroupId));
+            if (noteGroupProfile == null) throw new ArgumentNullException(nameof(noteGroupProfile));
             if (notePlaybackProviders == null) throw new ArgumentNullException(nameof(notePlaybackProviders));
             if (notePlaybackProviders.Count == 0) throw new ArgumentNullException("グループに所属するノートが含まれていません。");
 
-            this.noteGroupId = noteGroupId;
+            this.noteGroupProfile = noteGroupProfile;
             this.notePlaybackProviders = notePlaybackProviders;
+            this.judgmentCalculator = judgmentCalculator ?? throw new ArgumentNullException(nameof(judgmentCalculator));
         }
 
         /// <summary>
         /// ノートグループID
         /// </summary>
-        public NoteGroupId NoteGroupId => noteGroupId;
+        public NoteGroupId NoteGroupId => noteGroupProfile.NoteGroupId;
 
         /// <summary>
         /// グループに所属するノートのリスト
@@ -36,5 +39,25 @@ namespace Uoc.Analyze.Playback
         /// グループ始点の生成タイミング
         /// </summary>
         public long FirstInstantiateTiming => notePlaybackProviders[0].InstantiateTiming;
+
+        public IReadOnlyList<long> GetJudgmentTimings(int noteDivision, Func<NotePlaybackProvider, bool>? excludeAtNote = null)
+        {
+            if (noteDivision <= 0) throw new ArgumentOutOfRangeException(nameof(noteDivision));
+            return GetJudgmentTimings(_ => noteDivision, excludeAtNote);
+        }
+
+        public IReadOnlyList<long> GetJudgmentTimings(Func<Bpm, int> noteDivisionSelector, Func<NotePlaybackProvider, bool>? excludeAtNote = null)
+        {
+            if (noteDivisionSelector == null) throw new ArgumentNullException(nameof(noteDivisionSelector));
+            var excludedNoteGuids = new HashSet<Guid>();
+            if (excludeAtNote != null)
+            {
+                foreach (var note in notePlaybackProviders)
+                {
+                    if (excludeAtNote(note)) excludedNoteGuids.Add(note.Guid);
+                }
+            }
+            return judgmentCalculator.Calculate(noteGroupProfile, noteDivisionSelector, excludedNoteGuids);
+        }
     }
 }

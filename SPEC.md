@@ -362,7 +362,40 @@ public float CalculateNotePosition(long timing)
 
 #### メソッド
 
-- なし
+##### GetJudgmentTimings
+
+```csharp
+public IReadOnlyList<long> GetJudgmentTimings(int noteDivision, Func<NotePlaybackProvider, bool>? excludeAtNote = null)
+```
+- 役割：指定した音符間隔で、グループの周期判定タイミングを取得する
+  - 各小節の先頭を基準とし、グループの始点・終点を含む範囲の音符グリッド上の位置を取得する
+  - 時刻の計算には途中のBPM変更を反映する
+- 引数：
+  - `noteDivision`：音符間隔を表す正の整数（4は4分、8は8分間隔）
+  - `excludeAtNote`：所属ノートと同じ譜面位置の周期判定を除外するかを返す関数。`true` で除外し、省略または `null` では除外しない
+- 戻り値：
+  - `IReadOnlyList<long>`：譜面始点を0とするミリ秒単位の判定時刻一覧（昇順）
+- 例外/注意：
+  - 音符間隔が0以下、またはグリッドを表現できない場合は `ArgumentOutOfRangeException`
+  - 小節のtick数を正の整数で表現できない場合は `InvalidOperationException`
+
+##### GetJudgmentTimings
+
+```csharp
+public IReadOnlyList<long> GetJudgmentTimings(Func<Bpm, int> noteDivisionSelector, Func<NotePlaybackProvider, bool>? excludeAtNote = null)
+```
+- 役割：有効なBPMに応じて音符間隔を選び、グループの周期判定タイミングを取得する
+  - 各小節の先頭を基準とし、グループの始点・終点を含む範囲の音符グリッド上の位置を取得する
+  - BPM変更位置より前は旧間隔、変更位置以降は新間隔のグリッドを適用する
+- 引数：
+  - `noteDivisionSelector`：有効BPMを受け取り、音符間隔を正の整数で返す関数（4は4分、8は8分間隔）
+  - `excludeAtNote`：所属ノートと同じ譜面位置の周期判定を除外するかを返す関数。`true` で除外し、省略または `null` では除外しない
+- 戻り値：
+  - `IReadOnlyList<long>`：譜面始点を0とするミリ秒単位の判定時刻一覧（昇順）
+- 例外/注意：
+  - `noteDivisionSelector` が `null` の場合は `ArgumentNullException`
+  - 選択された音符間隔が0以下、またはグリッドを表現できない場合は `ArgumentOutOfRangeException`
+  - 小節のtick数を正の整数で表現できない場合は `InvalidOperationException`
 
 ---
 
