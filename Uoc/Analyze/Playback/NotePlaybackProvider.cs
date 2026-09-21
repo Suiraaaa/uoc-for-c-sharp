@@ -283,7 +283,7 @@ namespace Uoc.Analyze.Playback
             int measureIndex = 0;
             while (true)
             {
-                float measureStartTiming = CalculateMeasureStartTiming(measureIndex);
+                var measureStartTiming = CalculateTiming(measureIndex, 0);
                 if (measureStartTiming > timing)
                 {
                     measureIndex--;
