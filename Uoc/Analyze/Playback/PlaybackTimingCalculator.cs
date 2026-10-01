@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Uoc.Chart;
 using Uoc.Chart.Event;
 
@@ -10,6 +11,10 @@ namespace Uoc.Analyze.Playback
         private readonly BpmProvider bpmProvider;
         private readonly MeasureLengthProvider measureLengthProvider;
         private readonly Tpb tpb;
+        private readonly object cacheLock = new();
+        private readonly List<float> measureStartTimings = new() { 0f };
+        private readonly List<long> measureBoundaryTimings = new();
+        private bool canCacheTimings = true;
 
         public PlaybackTimingCalculator(BpmProvider bpmProvider, MeasureLengthProvider measureLengthProvider, Tpb tpb)
         {
@@ -50,12 +55,68 @@ namespace Uoc.Analyze.Playback
         /// <returns>指定された小節が開始されるタイミング</returns>
         public float CalculateMeasureStartTiming(int measureIndex)
         {
+            // 負の小節番号に対する既存の戻り値も維持する。
+            if (measureIndex <= 0) return 0f;
+            lock (cacheLock)
+            {
+                if (canCacheTimings && EnsureMeasureStartTiming(measureIndex)) return measureStartTimings[measureIndex];
+            }
+            return CalculateMeasureStartTimingWithoutCache(measureIndex);
+        }
+
+        private float CalculateMeasureStartTimingWithoutCache(int measureIndex)
+        {
             var timingSum = 0f;
             for (var i = 0; i < measureIndex; i++)
             {
                 timingSum += CalculateMeasureDuration(i);
             }
             return timingSum;
+        }
+
+        private bool EnsureMeasureStartTiming(int measureIndex)
+        {
+            while (measureStartTimings.Count <= measureIndex)
+            {
+                var previous = measureStartTimings[^1];
+                var next = previous + CalculateMeasureDuration(measureStartTimings.Count - 1);
+                if (!IsFiniteTiming(next) || next <= previous)
+                {
+                    canCacheTimings = false;
+                    return false;
+                }
+                measureStartTimings.Add(next);
+            }
+            return true;
+        }
+
+        private bool EnsureMeasureBoundaryTiming(int measureIndex)
+        {
+            while (measureBoundaryTimings.Count <= measureIndex)
+            {
+                var index = measureBoundaryTimings.Count;
+                if (!EnsureMeasureStartTiming(index)) return false;
+                // CalculateTiming(index, 0) と同じ加算・整数化の境界を維持する。
+                var timing = measureStartTimings[index] + CalculateMeasureDurationUpToTick(index, 0);
+                if (!IsFiniteTiming(timing) || timing < 0f || timing >= (float)long.MaxValue)
+                {
+                    canCacheTimings = false;
+                    return false;
+                }
+                var boundary = (long)timing;
+                if (index > 0 && boundary < measureBoundaryTimings[index - 1])
+                {
+                    canCacheTimings = false;
+                    return false;
+                }
+                measureBoundaryTimings.Add(boundary);
+            }
+            return true;
+        }
+
+        private static bool IsFiniteTiming(float timing)
+        {
+            return !float.IsNaN(timing) && !float.IsInfinity(timing);
         }
 
         /// <summary>
@@ -151,10 +212,37 @@ namespace Uoc.Analyze.Playback
         public int CalculateMeasureIndexFromTiming(long timing)
         {
             if (timing < 0) throw new ArgumentException(nameof(timing)); // 小節番号が負の値を取ることはないためエラー
+            lock (cacheLock)
+            {
+                if (canCacheTimings && EnsureMeasureBoundaryTiming(0))
+                {
+                    while (measureBoundaryTimings[^1] <= timing)
+                    {
+                        if (!EnsureMeasureBoundaryTiming(measureBoundaryTimings.Count)) break;
+                    }
+                    if (canCacheTimings)
+                    {
+                        var lower = 0;
+                        var upper = measureBoundaryTimings.Count;
+                        while (lower < upper)
+                        {
+                            var middle = lower + (upper - lower) / 2;
+                            if (measureBoundaryTimings[middle] <= timing) lower = middle + 1;
+                            else upper = middle;
+                        }
+                        return lower - 1;
+                    }
+                }
+            }
+            return CalculateMeasureIndexFromTimingWithoutCache(timing);
+        }
+
+        private int CalculateMeasureIndexFromTimingWithoutCache(long timing)
+        {
             var measureIndex = 0;
             while (true)
             {
-                var measureStartTiming = CalculateTiming(measureIndex, 0);
+                var measureStartTiming = (long)(CalculateMeasureStartTimingWithoutCache(measureIndex) + CalculateMeasureDurationUpToTick(measureIndex, 0));
                 if (measureStartTiming > timing)
                 {
                     measureIndex--;
