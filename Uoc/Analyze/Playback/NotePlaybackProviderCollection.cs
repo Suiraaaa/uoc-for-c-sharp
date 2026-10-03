@@ -20,8 +20,17 @@ namespace Uoc.Analyze.Playback
         public static NotePlaybackProviderCollection FormNoteProfileCollection(NoteProfileCollection noteProfileCollection, EventProviders eventsProvider, PlaybackTimingCalculator timingCalculator, AnalysisSetting analysisSetting)
         {
             var maxMeasureIndex = noteProfileCollection.GetMaxMeasureIndex();
-            var notePlaybackProviders = noteProfileCollection.NoteProfiles.Select(x => new NotePlaybackProvider(x, eventsProvider.SpeedMultiplierProvider, analysisSetting, timingCalculator, maxMeasureIndex)).ToList();
-            return new NotePlaybackProviderCollection(notePlaybackProviders);
+            var layers = noteProfileCollection.NoteProfiles.Select(x => x.Layer).Distinct().ToList();
+            var playbackCalculator = new NotePlaybackCalculator(eventsProvider.SpeedMultiplierProvider, timingCalculator, analysisSetting, maxMeasureIndex, layers);
+            try
+            {
+                var notePlaybackProviders = noteProfileCollection.NoteProfiles.Select(x => new NotePlaybackProvider(x, playbackCalculator)).ToList();
+                return new NotePlaybackProviderCollection(notePlaybackProviders);
+            }
+            finally
+            {
+                playbackCalculator.ReleaseInstantiationCache();
+            }
         }
 
         public IReadOnlyList<NotePlaybackProvider> NotePlaybackProviders => notePlaybackProviders;
