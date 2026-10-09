@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using Uoc.Chart.Event;
 
 namespace Uoc.Chart
@@ -80,33 +81,51 @@ namespace Uoc.Chart
             if (float.IsNaN(quarterNoteCount) || float.IsInfinity(quarterNoteCount) || quarterNoteCount < 0) throw new ArgumentOutOfRangeException(nameof(quarterNoteCount));
             if (measureLengthProvider == null) throw new ArgumentNullException(nameof(measureLengthProvider));
 
-            var remainingQuarterNotesCount = quarterNoteCount;
-            var measureIndex = 0;
-
-            // どの小節に属するかを判定
-            var measureQuarterNoteCount = measureLengthProvider.GetMeasureLengthAt(measureIndex).GetQuarterNoteCount();
-            while (remainingQuarterNotesCount >= measureQuarterNoteCount)
+            try
             {
-                remainingQuarterNotesCount -= measureQuarterNoteCount;
-                measureIndex++;
-                measureQuarterNoteCount = measureLengthProvider.GetMeasureLengthAt(measureIndex).GetQuarterNoteCount();
+                return CreateFromQuarterNoteFraction(Fraction.FromSingle(quarterNoteCount), measureLengthProvider);
             }
-
-            var numerator = remainingQuarterNotesCount / measureQuarterNoteCount;
-            var denominator = 1;
-
-            // 小数がなくなるまで10倍する（Positionのコンストラクタ内で約分されます）
-            while (numerator % 1 != 0)
+            catch (ArgumentOutOfRangeException exception) when (exception.ParamName == nameof(quarterNoteCount))
             {
-                if (denominator > int.MaxValue / 10)
+                // 近似した整数比がPositionの範囲を超える場合は、2進数の正確な整数比でも確認する。
+                return CreateFromQuarterNoteFraction(Fraction.FromSingleExact(quarterNoteCount), measureLengthProvider);
+            }
+        }
+
+        private static Position CreateFromQuarterNoteFraction(Fraction quarterNoteCount, MeasureLengthProvider measureLengthProvider)
+        {
+            if (quarterNoteCount.Numerator.Sign < 0) throw new ArgumentOutOfRangeException(nameof(quarterNoteCount));
+            if (measureLengthProvider == null) throw new ArgumentNullException(nameof(measureLengthProvider));
+
+            var changes = measureLengthProvider.MeasureLengthChangeEvents;
+            var remaining = quarterNoteCount;
+            for (var i = 0; i < changes.Count; i++)
+            {
+                var change = changes[i];
+                var measureQuarterNotes = GetMeasureQuarterNoteFraction(change.MeasureLength);
+                var startMeasure = change.MeasureIndex.Value;
+                if (i + 1 < changes.Count)
+                {
+                    var span = measureQuarterNotes * new Fraction(changes[i + 1].MeasureIndex.Value - startMeasure, 1);
+                    if (remaining.CompareTo(span) >= 0)
+                    {
+                        remaining -= span;
+                        continue;
+                    }
+                }
+
+                var measures = remaining / measureQuarterNotes;
+                var wholeMeasures = System.Numerics.BigInteger.DivRem(measures.Numerator, measures.Denominator, out var remainder);
+                var targetMeasure = startMeasure + wholeMeasures;
+                if (targetMeasure > int.MaxValue) throw new ArgumentOutOfRangeException(nameof(quarterNoteCount));
+                var position = new Fraction(remainder, measures.Denominator);
+                if (position.Denominator > int.MaxValue)
                 {
                     throw new ArgumentOutOfRangeException(nameof(quarterNoteCount), "譜面位置をintの範囲内の分数で表すことができません。");
                 }
-                numerator *= 10;
-                denominator *= 10;
+                return new Position(new MeasureIndex((int)targetMeasure), (int)position.Denominator, (int)position.Numerator);
             }
-            return new Position(new MeasureIndex(measureIndex), denominator, (int)numerator);
-
+            throw new InvalidOperationException("小節長が見つかりません。");
         }
 
         /// <summary>
@@ -159,6 +178,11 @@ namespace Uoc.Chart
         /// <returns>距離が加算されたPosition</returns>
         public Position AddDistance(Distance distance, MeasureLengthProvider measureLengthProvider)
         {
+            if (distance == null) throw new ArgumentNullException(nameof(distance));
+            if (distance.QuarterNoteFraction is Fraction fraction)
+            {
+                return CreateFromQuarterNoteFraction(GetTotalQuarterNoteFraction(measureLengthProvider) + fraction, measureLengthProvider);
+            }
             var totalQuarterNotescount = GetTotalQuarterNoteCount(measureLengthProvider);
             totalQuarterNotescount += distance.QuarterNoteCount;
             return CreateFromQuarterNotesCount(totalQuarterNotescount, measureLengthProvider);
@@ -172,8 +196,35 @@ namespace Uoc.Chart
         /// <returns>再計算されたPosition</returns>
         public Position RecalculatePosition(MeasureLengthProvider oldMeasureLengthProvider, MeasureLengthProvider newMeasureLengthProvider)
         {
-            var totalQuarterNoteCount = GetTotalQuarterNoteCount(oldMeasureLengthProvider);
-            return CreateFromQuarterNotesCount(totalQuarterNoteCount, newMeasureLengthProvider);
+            var totalQuarterNoteCount = GetTotalQuarterNoteFraction(oldMeasureLengthProvider);
+            return CreateFromQuarterNoteFraction(totalQuarterNoteCount, newMeasureLengthProvider);
+        }
+
+        internal Fraction GetTotalQuarterNoteFraction(MeasureLengthProvider measureLengthProvider)
+        {
+            if (measureLengthProvider == null) throw new ArgumentNullException(nameof(measureLengthProvider));
+            var total = Fraction.Zero;
+            var changes = measureLengthProvider.MeasureLengthChangeEvents;
+            for (var i = 0; i < changes.Count; i++)
+            {
+                var change = changes[i];
+                if (change.MeasureIndex.Value > measureIndex.Value) break;
+                var endMeasure = i + 1 < changes.Count
+                    ? Math.Min(changes[i + 1].MeasureIndex.Value, measureIndex.Value)
+                    : measureIndex.Value;
+                var length = GetMeasureQuarterNoteFraction(change.MeasureLength);
+                total += length * new Fraction(endMeasure - change.MeasureIndex.Value, 1);
+                if (i + 1 == changes.Count || changes[i + 1].MeasureIndex.Value > measureIndex.Value)
+                {
+                    return total + length * new Fraction(activeIndex, sectionCount);
+                }
+            }
+            throw new InvalidOperationException("小節長が見つかりません。");
+        }
+
+        private static Fraction GetMeasureQuarterNoteFraction(MeasureLength measureLength)
+        {
+            return new Fraction((BigInteger)measureLength.Numerator * 4, measureLength.Denominator);
         }
 
         /// <summary>

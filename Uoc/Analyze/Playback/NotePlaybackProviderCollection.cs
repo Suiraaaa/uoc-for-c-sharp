@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Uoc.Chart;
 using Uoc.Chart.Event;
 using Uoc.Chart.Notes;
 
