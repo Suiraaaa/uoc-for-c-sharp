@@ -11,6 +11,8 @@ namespace Uoc.Chart.Event
     {
         private readonly IReadOnlyList<MeasureLengthChangeEvent> measureLengthChangeEvents;
 
+        internal IReadOnlyList<MeasureLengthChangeEvent> MeasureLengthChangeEvents => measureLengthChangeEvents;
+
         internal MeasureLengthProvider(IReadOnlyList<MeasureLengthChangeEvent> measureLengthChangeEvents)
         {
             if (measureLengthChangeEvents == null) throw new ArgumentNullException(nameof(measureLengthChangeEvents));
