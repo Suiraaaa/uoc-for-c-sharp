@@ -104,7 +104,7 @@ namespace Uoc.Parse
             // レイヤーごとに処理
             for (int i = Layer.MinLayerValue; i <= Layer.MaxLayerValue; i++)
             {
-                var notesInLayer = noteProfiles.Where(x => x.Layer.Value == i).OrderBy(x => x.Position.MeasureIndex.Value).ThenBy(x => x.Position.Position01).ToList();
+                var notesInLayer = noteProfiles.Where(x => x.Layer.Value == i).OrderBy(x => x.Position).ToList();
                 if (notesInLayer.Count == 0) continue;
                 stringBuilder.AppendLine($"# LAYER : {i}");
                 foreach (var note in notesInLayer)
@@ -114,17 +114,15 @@ namespace Uoc.Parse
                     var line = $"# {Base36.Encode(note.Position.MeasureIndex.Value).ToString().PadLeft(3, '0')}";
                     line += $"{Base36.Encode(noteDefCollection.GetNoteDefIndexById(note.NoteDef.NoteId).Value).PadLeft(2, '0')}";
                     line += $"{(!note.Channel.IsEmpty ? Base36.Encode(note.Channel.Value).ToString().PadLeft(2, '0') : "")} : ";
-                    for (int j = 0; j < note.Position.SectionCount; j++)
-                    {
-                        line += j == note.Position.ActiveIndex ? "1" : "0";
-                    }
-                    line += $", ";
+                    stringBuilder.Append(line);
+                    stringBuilder.Append('0', note.Position.ActiveIndex);
+                    stringBuilder.Append('1');
+                    stringBuilder.Append('0', note.Position.SectionCount - note.Position.ActiveIndex - 1);
                     for (int j = 0; j < note.PropertyGroup.Count; j++)
                     {
-                        line += $"{note.PropertyGroup[j].Value.AsString()}, ";
+                        stringBuilder.Append(", ").Append(note.PropertyGroup[j].Value.AsString());
                     }
-                    line = line[0..^2]; // 末尾のコンマ削除
-                    stringBuilder.AppendLine(line);
+                    stringBuilder.AppendLine();
                 }
             }
 

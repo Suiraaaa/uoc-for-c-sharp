@@ -92,6 +92,31 @@ namespace Uoc.Chart
             }
         }
 
+        /// <summary>
+        /// 現在位置より後にある最初のスナップ位置を、整数比で計算します。
+        /// スナップ間隔は四分音符4個をsnapBeatsで分割した長さです。
+        /// </summary>
+        public Position GetNextSnapPosition(int snapBeats, MeasureLengthProvider measureLengthProvider)
+        {
+            if (snapBeats < 1) throw new ArgumentOutOfRangeException(nameof(snapBeats));
+            var snapIndex = GetTotalQuarterNoteFraction(measureLengthProvider) * new Fraction(snapBeats, 4);
+            var nextIndex = snapIndex.Numerator / snapIndex.Denominator + 1;
+            return CreateFromQuarterNoteFraction(new Fraction(nextIndex * 4, snapBeats), measureLengthProvider);
+        }
+
+        /// <summary>
+        /// 現在位置より前にある最後のスナップ位置を、整数比で計算します。
+        /// 譜面の始点ではnullを返します。
+        /// </summary>
+        public Position? GetPreviousSnapPosition(int snapBeats, MeasureLengthProvider measureLengthProvider)
+        {
+            if (snapBeats < 1) throw new ArgumentOutOfRangeException(nameof(snapBeats));
+            var snapIndex = GetTotalQuarterNoteFraction(measureLengthProvider) * new Fraction(snapBeats, 4);
+            var previousIndex = (snapIndex.Numerator + snapIndex.Denominator - 1) / snapIndex.Denominator - 1;
+            if (previousIndex.Sign < 0) return null;
+            return CreateFromQuarterNoteFraction(new Fraction(previousIndex * 4, snapBeats), measureLengthProvider);
+        }
+
         private static Position CreateFromQuarterNoteFraction(Fraction quarterNoteCount, MeasureLengthProvider measureLengthProvider)
         {
             if (quarterNoteCount.Numerator.Sign < 0) throw new ArgumentOutOfRangeException(nameof(quarterNoteCount));

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using Uoc.Chart.Event;
 
 namespace Uoc.Chart
@@ -19,6 +20,19 @@ namespace Uoc.Chart
             {
                 quarterNoteFraction = Fraction.FromSingle(quarterNoteCount);
             }
+        }
+
+        /// <summary>
+        /// 四分音符単位の距離を、分子と正の分母から正確に作成します。
+        /// </summary>
+        public Distance(BigInteger quarterNoteNumerator, BigInteger quarterNoteDenominator)
+        {
+            if (quarterNoteDenominator.Sign <= 0) throw new ArgumentOutOfRangeException(nameof(quarterNoteDenominator));
+            var fraction = new Fraction(quarterNoteNumerator, quarterNoteDenominator);
+            quarterNoteFraction = fraction;
+            // 分子と分母を同量だけ縮小し、doubleへの変換時に両方がInfinityになることを防ぐ。
+            var shift = Math.Max(0, fraction.Denominator.ToByteArray().Length * 8 - 512);
+            quarterNoteCount = (float)((double)(fraction.Numerator >> shift) / (double)(fraction.Denominator >> shift));
         }
 
         private Distance(float quarterNoteCount, Fraction quarterNoteFraction)
@@ -50,6 +64,16 @@ namespace Uoc.Chart
         /// 四分音符単位の距離
         /// </summary>
         public float QuarterNoteCount => quarterNoteCount;
+
+        /// <summary>
+        /// 四分音符単位の距離の正確な分子。非有限値の距離では取得できません。
+        /// </summary>
+        public BigInteger QuarterNoteNumerator => (quarterNoteFraction ?? throw new InvalidOperationException("非有限値の距離には整数比がありません。")).Numerator;
+
+        /// <summary>
+        /// 四分音符単位の距離の正確な分母。非有限値の距離では取得できません。
+        /// </summary>
+        public BigInteger QuarterNoteDenominator => (quarterNoteFraction ?? throw new InvalidOperationException("非有限値の距離には整数比がありません。")).Denominator;
 
         /// <summary>
         /// 距離の絶対値を求め、新たなDistanceオブジェクトとして返します。
