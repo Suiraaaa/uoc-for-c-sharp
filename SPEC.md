@@ -733,6 +733,21 @@ public Position AddDistance(Distance distance, MeasureLengthProvider measureLeng
 - 戻り値：
   - `Position`：距離が加算された `Position`
 
+##### GetNextSnapPosition / GetPreviousSnapPosition
+
+```csharp
+public Position GetNextSnapPosition(int snapBeats, MeasureLengthProvider measureLengthProvider)
+public Position? GetPreviousSnapPosition(int snapBeats, MeasureLengthProvider measureLengthProvider)
+```
+- 役割：現在位置より後／前にある最初／最後のスナップ位置を整数比で求める
+- 引数：
+  - `snapBeats`：四分音符4個を分割する数。1以上を指定する
+  - `measureLengthProvider`：小節長情報を提供するプロバイダ
+- スナップの基準点は譜面の始点。同じ位置は返さず、小節長変更を含めて正確に計算する
+- 譜面の始点で `GetPreviousSnapPosition` を呼ぶと `null` を返す
+- 不正な分割数、または結果を `Position` の整数範囲で表せない場合は `ArgumentOutOfRangeException` を送出する
+- `measureLengthProvider` が `null` の場合は `ArgumentNullException` を送出する
+
 ##### RecalculatePosition
 
 ```csharp
@@ -789,6 +804,10 @@ public int CompareTo(Position? other)
 | 名前               | 型      | アクセス | 内容               |
 | ------------------ | ------- | -------- | ------------------ |
 | `QuarterNoteCount` | `float` | get      | 四分音符単位の距離 |
+| `QuarterNoteNumerator` | `System.Numerics.BigInteger` | get | 四分音符単位の距離の正確な分子 |
+| `QuarterNoteDenominator` | `System.Numerics.BigInteger` | get | 四分音符単位の距離の正確な分母 |
+
+- 正確な整数比のプロパティは約分済み。非有限値から作成した距離では `InvalidOperationException` を送出する
 
 #### コンストラクタ
 
@@ -802,6 +821,15 @@ public Distance(float quarterNoteCount)
   - `quarterNoteCount`：四分音符の数
 
 #### メソッド
+
+##### Distance（整数比）
+
+```csharp
+public Distance(System.Numerics.BigInteger quarterNoteNumerator, System.Numerics.BigInteger quarterNoteDenominator)
+```
+- 役割：四分音符単位の距離を整数比から正確に生成する
+- 分子は負値も指定できる。分母が0以下の場合は `ArgumentOutOfRangeException` を送出する
+- `QuarterNoteCount` は表示用の近似値。位置計算と整数比の取得には正確な分数を使用する
 
 ##### CreateFromDifference（static）
 
