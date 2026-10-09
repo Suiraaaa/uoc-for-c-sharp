@@ -10,11 +10,24 @@ namespace Uoc.Chart
     public class Distance : IEquatable<Distance>
     {
         private readonly float quarterNoteCount;
+        private readonly Fraction? quarterNoteFraction;
 
         public Distance(float quarterNoteCount)
         {
             this.quarterNoteCount = quarterNoteCount;
+            if (!float.IsNaN(quarterNoteCount) && !float.IsInfinity(quarterNoteCount))
+            {
+                quarterNoteFraction = Fraction.FromSingle(quarterNoteCount);
+            }
         }
+
+        private Distance(float quarterNoteCount, Fraction quarterNoteFraction)
+        {
+            this.quarterNoteCount = quarterNoteCount;
+            this.quarterNoteFraction = quarterNoteFraction;
+        }
+
+        internal Fraction? QuarterNoteFraction => quarterNoteFraction;
 
         /// <summary>
         /// 二点間から距離を作成します。
@@ -28,7 +41,9 @@ namespace Uoc.Chart
             if (start == null) throw new ArgumentNullException(nameof(start));
             if (end == null) throw new ArgumentNullException(nameof(end));
             if (measureLengthProvider == null) throw new ArgumentNullException(nameof(measureLengthProvider));
-            return new Distance(end.GetTotalQuarterNoteCount(measureLengthProvider) - start.GetTotalQuarterNoteCount(measureLengthProvider));
+            var quarterNoteCount = end.GetTotalQuarterNoteCount(measureLengthProvider) - start.GetTotalQuarterNoteCount(measureLengthProvider);
+            var quarterNoteFraction = end.GetTotalQuarterNoteFraction(measureLengthProvider) - start.GetTotalQuarterNoteFraction(measureLengthProvider);
+            return new Distance(quarterNoteCount, quarterNoteFraction);
         }
 
         /// <summary>
@@ -42,6 +57,10 @@ namespace Uoc.Chart
         /// <returns>距離の絶対値</returns>
         public Distance Absolute()
         {
+            if (quarterNoteFraction is Fraction fraction)
+            {
+                return new Distance(Math.Abs(quarterNoteCount), fraction.Numerator.Sign < 0 ? -fraction : fraction);
+            }
             return new Distance(Math.Abs(quarterNoteCount));
         }
 
