@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using Uoc.Chart.Event;
 
 namespace Uoc.Chart
@@ -223,7 +224,7 @@ namespace Uoc.Chart
 
         private static Fraction GetMeasureQuarterNoteFraction(MeasureLength measureLength)
         {
-            return new Fraction((System.Numerics.BigInteger)measureLength.Numerator * 4, measureLength.Denominator);
+            return new Fraction((BigInteger)measureLength.Numerator * 4, measureLength.Denominator);
         }
 
         /// <summary>

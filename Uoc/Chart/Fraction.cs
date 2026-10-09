@@ -6,7 +6,11 @@ namespace Uoc.Chart
     // 位置と四分音符数の整数比を保持し、途中計算のオーバーフローと丸めを防ぐ。
     internal readonly struct Fraction
     {
-        internal Fraction(BigInteger numerator, BigInteger denominator)
+        private readonly BigInteger numerator;
+        private readonly BigInteger denominator;
+
+
+        public Fraction(BigInteger numerator, BigInteger denominator)
         {
             if (denominator.IsZero) throw new DivideByZeroException();
             if (denominator.Sign < 0)
@@ -15,15 +19,17 @@ namespace Uoc.Chart
                 denominator = -denominator;
             }
             var gcd = BigInteger.GreatestCommonDivisor(BigInteger.Abs(numerator), denominator);
-            Numerator = numerator / gcd;
-            Denominator = denominator / gcd;
+            this.numerator = numerator / gcd;
+            this.denominator = denominator / gcd;
         }
 
-        internal BigInteger Numerator { get; }
-        internal BigInteger Denominator { get; }
-        internal static Fraction Zero => new(0, 1);
+        public BigInteger Numerator => numerator;
 
-        internal static Fraction FromSingleExact(float value)
+        public BigInteger Denominator => denominator;
+
+        public static Fraction Zero => new(0, 1);
+
+        public static Fraction FromSingleExact(float value)
         {
             if (float.IsNaN(value) || float.IsInfinity(value)) throw new ArgumentOutOfRangeException(nameof(value));
             var bits = BitConverter.SingleToInt32Bits(value);
@@ -38,7 +44,7 @@ namespace Uoc.Chart
                 : new Fraction(numerator, BigInteger.One << -shift);
         }
 
-        internal static Fraction FromSingle(float value)
+        public static Fraction FromSingle(float value)
         {
             var exact = FromSingleExact(value);
             if (exact.Numerator.IsZero || exact.Denominator.IsOne) return exact;
@@ -81,7 +87,7 @@ namespace Uoc.Chart
             return exact;
         }
 
-        internal int CompareTo(Fraction other)
+        public int CompareTo(Fraction other)
         {
             return (Numerator * other.Denominator).CompareTo(other.Numerator * Denominator);
         }
